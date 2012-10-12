@@ -1,11 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://KirillLykov.github.com/blog/2012/10/12/initial-post/</loc>
+        <lastmod>2012-10-12T16:45:07+02:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KirillLykov.github.com/about/</loc>
+        <lastmod>2012-10-12T16:46:55+02:00</lastmod>
+    </url>
+    <url>
         <loc>http://KirillLykov.github.com/blog/archives/</loc>
-        <lastmod>2012-10-12T14:27:09+02:00</lastmod>
+        <lastmod>2012-10-12T16:45:07+02:00</lastmod>
     </url>
     <url>
         <loc>http://KirillLykov.github.com/</loc>
-        <lastmod>2012-10-12T14:27:09+02:00</lastmod>
+        <lastmod>2012-10-12T16:45:07+02:00</lastmod>
     </url>
 </urlset>
