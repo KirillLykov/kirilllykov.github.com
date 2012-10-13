@@ -7,9 +7,9 @@ categories:
 ---
 
 Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):
-·      changing particles characteristics (positions, velocities, forces, etc.). Example: fix_freeze.
-·      reading/writing data. Example: fix_restart.
-·      implementing boundary conditions. Example: fix_wall*.
+·      changing particles characteristics (positions, velocities, forces, etc.). Example: fix_freeze.<br>
+·      reading/writing data. Example: fix_restart.<br>
+·      implementing boundary conditions. Example: fix_wall*.<br>
 ·      saving information about particles for future use (previous positions, for instance).
 <!--more-->
 All fixes are derived from class Fix and must have constructor with the signature:
