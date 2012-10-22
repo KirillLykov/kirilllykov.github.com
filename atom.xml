@@ -4,7 +4,7 @@
   <title><![CDATA[K. Lykov Blog]]></title>
   <link href="http://KirillLykov.github.com/atom.xml" rel="self"/>
   <link href="http://KirillLykov.github.com/"/>
-  <updated>2012-10-22T11:05:19+02:00</updated>
+  <updated>2012-10-22T15:06:41+02:00</updated>
   <id>http://KirillLykov.github.com/</id>
   <author>
     <name><![CDATA[Kirill Lykov]]></name>
@@ -12,6 +12,133 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[LAMMPS: How to compute fluid viscosity]]></title>
+    <link href="http://KirillLykov.github.com/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/"/>
+    <updated>2012-10-22T14:47:00+02:00</updated>
+    <id>http://KirillLykov.github.com/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity</id>
+    <content type="html"><![CDATA[<p>The theory is described in “Poiseuille flow to measure the viscosity of particle model fluids” by J. A. Backer et al. Below
+I describe how to use this approach in LAMMPS.</p>
+
+<!--more-->
+
+
+<ol>
+<li>Run LAMMPS with the following script</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>boundary p p p
+</span><span class='line'>
+</span><span class='line'>units     lj
+</span><span class='line'>atom_style    atomic
+</span><span class='line'>
+</span><span class='line'>lattice custom 3.0 a1 1.0 0.0 0.0 a2 0.0 1.0 0.0 a3 0.0 0.0 1.0 &
+</span><span class='line'>      basis 0.5 0.0 0.0 basis 0.0 0.5 0.0 basis 0.0 0.0 0.5
+</span><span class='line'>
+</span><span class='line'>region box block -7.0 7.0  -7.0 7.0  -14.0 14.0
+</span><span class='line'>
+</span><span class='line'>region left  block -7.0 7.0  -7.0 7.0 -14.0 0.0
+</span><span class='line'>region right block -7.0 7.0  -7.0 7.0 0.0 14.0
+</span><span class='line'>
+</span><span class='line'># Uncomment it if you don't use restart file
+</span><span class='line'>create_box  1 box
+</span><span class='line'>create_atoms    1 box
+</span><span class='line'>mass        1 1.0
+</span><span class='line'>
+</span><span class='line'>neighbor    0.3 bin
+</span><span class='line'>neigh_modify    delay 0 every 4 check no
+</span><span class='line'>
+</span><span class='line'>#******************DPD******************
+</span><span class='line'>#to store velocities by ghost atoms
+</span><span class='line'>communicate single vel yes
+</span><span class='line'># T cutoff seed
+</span><span class='line'>pair_style  dpd 0.1 1.0 34387
+</span><span class='line'># atom_type atom_type a gamma=sigma^2/2 cutoff(optional)
+</span><span class='line'># where a is Fc coefficent.
+</span><span class='line'>pair_coeff  1 1 25.0 45.0 1.0
+</span><span class='line'>
+</span><span class='line'>thermo          500
+</span><span class='line'>timestep 0.001
+</span><span class='line'>
+</span><span class='line'>fix 1 all nve
+</span><span class='line'>fix 2 all addforce -0.055 0.0 0.0 region left
+</span><span class='line'>fix 3 all addforce 0.055 0.0 0.0 region right
+</span><span class='line'>fix 4 all ave/spatial 10 100 10000 z center 0.5 vx file vel-visc.txt
+</span><span class='line'>
+</span><span class='line'>run 20000</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Open vel-visc and copy in a separate document data for one time step.</li>
+<li>Open gnuplot, type</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The result should be something like:
+<img src="../../../../../images/velprofile1.png" width="300"></p>
+
+<ol>
+<li>From analytical solution for the problem, it is known that v(x)=alpha<em>(x</em>D - x<em>x). In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha</em>(x<em>14 + x</em>x). Then type</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gnuplot&gt; f(x)=a*(x*14 + x*x)
+</span><span class='line'>gnuplot&gt; fit f(x) 'visc_vel.txt' using 2:4 via a
+</span><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4, f(x)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The result should be a=0.0159 and the plot looks like that:
+<img src="../../../../../images/velprofile2.png" width="300"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How to write fix for LAMMPS]]></title>
