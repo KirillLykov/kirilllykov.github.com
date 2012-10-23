@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>How to write fix for LAMMPS - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="Writing fixes is the main way of extending LAMMPS. User can implement many things using fixes, including (but not limited):
+· changing particles &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2012/10/13/writing-fixes-for-lammps/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">How to Write Fix for LAMMPS</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-13T21:08:00+02:00" pubdate data-updated="true">Oct 13<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):
+·      changing particles characteristics (positions, velocities, forces, etc.). Example: fix_freeze.<br>
+·      reading/writing data. Example: fix_restart.<br>
+·      implementing boundary conditions. Example: fix_wall*.<br>
+·      saving information about particles for future use (previous positions, for instance).</p>
+
+<!--more-->
+
+
+<p>All fixes are derived from class Fix and must have constructor with the signature:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">FixMine</span><span class="p">(</span><span class="k">class</span> <span class="nc">LAMMPS</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Every fix must be registered in LAMMPS by writing the following lines of code in the header before include guards:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#ifdef FIX_CLASS</span>
+</span><span class='line'><span class="n">FixStyle</span><span class="p">(</span><span class="n">name_of_your_fix_in_script</span><span class="p">,</span><span class="n">name_of_your_fix_class</span><span class="p">)</span>
+</span><span class='line'><span class="cp">#else</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This code allows LAMMPS to find your fix when it parses input script. In addition, your fix header must be included in the file ”style_fix.h”. In case if you use LAMMPS’ make, this file is generated automatically - all files starting with fix_ are included, so call your header the same way. Otherwise, don’t forget to add your include into ”style_fix.h”.</p>
+
+<p>Let’s write a simple fix which will print average velocity at the end of each timestep. First of all, implement a constructor:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">FixPrint2</span><span class="o">::</span><span class="n">FixPrint2</span><span class="p">(</span><span class="n">LAMMPS</span> <span class="o">*</span><span class="n">lmp</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narg</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">arg</span><span class="p">)</span>
+</span><span class='line'><span class="o">:</span> <span class="n">Fix</span><span class="p">(</span><span class="n">lmp</span><span class="p">,</span> <span class="n">narg</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">narg</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="n">error</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">(</span><span class="n">FLERR</span><span class="p">,</span><span class="s">&quot;Illegal fix print command&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">nevery</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">nevery</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="n">error</span><span class="o">-&gt;</span><span class="n">all</span><span class="p">(</span><span class="n">FLERR</span><span class="p">,</span><span class="s">&quot;Illegal fix print command&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>
+In the constructor you may parse your fix arguments. All fixes have pretty the same syntax:
+fix &lt;fix_identifier> &lt;group_name> &lt;fix_name> &lt;fix_arguments></p>
+
+<p>The first 3 parameters are parsed by LAMMPS, while <fix_arguments> should be parsed by user. In our case, we need to specify how often we want to print average velocity. For instance, once in 50 timesteps:
+fix 1 print2 50</p>
+
+<p>There is a special variable in Fix class called nevery which specify how often method end_of_step will be called. Thus all we need to do is just set it up.</p>
+
+<p>The next method you need to implement is setmask:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">int</span> <span class="n">FixPrint2</span><span class="o">::</span><span class="n">setmask</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">mask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">mask</span> <span class="o">|=</span> <span class="n">FixConst</span><span class="o">::</span><span class="n">END_OF_STEP</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">mask</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>
+Here user must specify which methods of your fix should be called during execution. For instance, END_OF_STEP corresponds to the end_of_step method. There are 8 most important methods:</p>
+
+<p>initial_integrate
+post_integrate
+pre_exchange
+pre_neighbor
+pre_force
+post_force
+final_integrate
+end_of_step</p>
+
+<p>These methods are called in predefined order during the execution of verlet algorithm (look at the method void Verlet::run(int n) in verlet.cpp). I listed them in this order. User must understand when he want to execute his code.</p>
+
+<p>In case if we want to write print2 fix, we need only end_of_step.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="n">FixPrint2</span><span class="o">::</span><span class="n">end_of_step</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">double</span><span class="o">**</span> <span class="n">v</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">nlocal</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">nlocal</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">double</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+</span><span class='line'>  <span class="n">memset</span><span class="p">(</span><span class="n">averageVelocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">indexOfParticle</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">indexOfParticle</span> <span class="o">&lt;</span> <span class="n">nlocal</span><span class="p">;</span> <span class="o">++</span><span class="n">indexOfParticle</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">MathExtra</span><span class="o">::</span><span class="n">add3</span><span class="p">(</span><span class="n">averageVelocity</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">indexOfParticle</span><span class="p">],</span> <span class="n">averageVelocity</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="n">MathExtra</span><span class="o">::</span><span class="n">scale3</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">nlocal</span><span class="p">,</span> <span class="n">averageVelocity</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">”</span>
+</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">“</span>
+</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>
+In order to use MathExtra routines, include math_extra.h. This file contains math functions to work with arrays of doubles as with math vectors.</p>
+
+<p>In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.</p>
+
+<p>The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - <group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">indexOfParticle</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">indexOfParticle</span> <span class="o">&lt;</span> <span class="n">nlocal</span><span class="p">;</span> <span class="o">++</span><span class="n">indexOfParticle</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">atom</span><span class="o">-&gt;</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">groupbit</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="c1">//Do all job here</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The class Pointers contains instance of class Atom. Class atom encapsulates atoms positions, velocities, forces, etc. User can access them using particle index. Note, that particle indexes are changing every timestep because of sorting. So if you just stored position of atom from previous time step in your fix, it will not be valid on the next iteration. In order to handle this situation there are several methods which can be implemented:</p>
+
+<p>  double memory_usage - return how much memory fix uses
+  void grow_arrays(int) - do reallocation of the per particle arrays in your fix
+  void copy_arrays(int i, int j) - copy i-th per-particle information to j-th. Used when atoms sorting is performed
+  void set_arrays(int i) - sets i-th particle related information to zero</p>
+
+<p>For instance, assume you need to write a fix which will store positions of atoms from previous timestep. You will add double** x to the header file. Than add allocation code to constructor:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">memory</span><span class="o">-&gt;</span><span class="n">create</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">,</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">nmax</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;FixSavePos:x&quot;</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Free memory at destructor:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">memory</span><span class="o">-&gt;</span><span class="n">destroy</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, implement mentioned methods:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">double</span> <span class="n">FixSavePos</span><span class="o">::</span><span class="n">memory_usage</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">nmax</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">nmax</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">double</span> <span class="n">bytes</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">bytes</span> <span class="o">+=</span> <span class="n">nmax</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">bytes</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">FixSavePos</span><span class="o">::</span><span class="n">grow_arrays</span><span class="p">(</span><span class="kt">int</span> <span class="n">nmax</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">memory</span><span class="o">-&gt;</span><span class="n">grow</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;FixSavePos:x&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">FixSavePos</span><span class="o">::</span><span class="n">copy_arrays</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="kt">int</span> <span class="n">j</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">memcpy</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">FixSavePos</span><span class="o">::</span><span class="n">set_arrays</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">memset</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, a little bit about memory allocation: I used LAMMPS memory class which is just a bunch of template functions for allocating 1D and 2D arrays. So you need to add include “memory.h” to have access to them.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-13T21:08:00+02:00" pubdate data-updated="true">Oct 13<span>th</span>, 2012</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2012/10/13/writing-fixes-for-lammps/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2012/10/13/writing-fixes-for-lammps/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/10/12/initial-post/" title="Previous Post: Java Modeling Language">&laquo; Java Modeling Language</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/" title="Next Post: LAMMPS: How to compute fluid viscosity">LAMMPS: How to compute fluid viscosity &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/">LAMMPS: How to compute fluid viscosity</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/13/writing-fixes-for-lammps/">How to write fix for LAMMPS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/10/12/initial-post/">Java Modeling Language</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
