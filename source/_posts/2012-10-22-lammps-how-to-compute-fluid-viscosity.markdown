@@ -9,7 +9,7 @@ categories:
 The theory is described in “Poiseuille flow to measure the viscosity of particle model fluids” by J. A. Backer et al. Below
 I describe how to use this approach in LAMMPS.
 <!--more-->
-1. Run LAMMPS with the following script
+(1) Run LAMMPS with the following script
 ```
 boundary p p p
 
@@ -42,29 +42,33 @@ pair_style  dpd 0.1 1.0 34387
 pair_coeff  1 1 25.0 45.0 1.0
 
 thermo          500
-timestep 0.001
+timestep 0.01
 
 fix 1 all nve
 fix 2 all addforce -0.055 0.0 0.0 region left
 fix 3 all addforce 0.055 0.0 0.0 region right
-fix 4 all ave/spatial 10 100 10000 z center 0.5 vx file vel-visc.txt
+fix 4 all ave/spatial 50 1000 50000 z center 0.5 vx file vel-visc.txt
 
-run 20000
+run 100000
 ```
-2. Open vel-visc and copy in a separate document data for one time step.
-3. Open gnuplot, type
+(2) Open vel-visc and copy in a separate document data for one time step.
+
+
+(3) Open gnuplot, type:
 ```
 gnuplot> plot "visc_vel.txt" using 2:4
 ```
 The result should be something like:
-<img src="../../../../../images/velprofile1.png" width="300">
+<img src="../../../../../images/velprofile1.png" width="400">
 
-4. From analytical solution for the problem, it is known that v(x)=alpha*(x*D - x*x). In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha*(x*14 + x*x). Then type
+(4) From analytical solution for the problem, it is known that v(x)=alpha\*(x\*D - x\*x). Where alpha=p\*g/(2\*n), p - is numeric density(3.0 in our case,
+determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
+In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha*(x*14 + x*x). Then type
 ```
 gnuplot> f(x)=a*(x*14 + x*x)
 gnuplot> fit f(x) 'visc_vel.txt' using 2:4 via a
 gnuplot> plot "visc_vel.txt" using 2:4, f(x)
 ```
 
-The result should be a=0.0159 and the plot looks like that:
-<img src="../../../../../images/velprofile2.png" width="300">
+The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:
+<img src="../../../../../images/velprofile2.png" width="400">
