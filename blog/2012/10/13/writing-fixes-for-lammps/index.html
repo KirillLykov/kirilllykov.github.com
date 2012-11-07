@@ -90,7 +90,7 @@
   </header>
 
 
-<div class="entry-content"><p>Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):
+<div class="entry-content"><p>Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):<br>
 ·      changing particles characteristics (positions, velocities, forces, etc.). Example: fix_freeze.<br>
 ·      reading/writing data. Example: fix_restart.<br>
 ·      implementing boundary conditions. Example: fix_wall*.<br>
@@ -332,7 +332,7 @@ In order to use MathExtra routines, include math_extra.h. This file contains mat
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Now, a little bit about memory allocation: I used LAMMPS memory class which is just a bunch of template functions for allocating 1D and 2D arrays. So you need to add include “memory.h” to have access to them.</p>
+<p>Now, a little bit about memory allocation: I used LAMMPS memory class which is just a bunch of template functions for allocating 1D and 2D arrays. So you need to add include &#8220;memory.h&#8221; to have access to them.</p>
 </div>
 
 
@@ -388,6 +388,10 @@ In order to use MathExtra routines, include math_extra.h. This file contains mat
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/11/03/writing-container-with-allocator/">Writing container with allocator</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/">LAMMPS: How to compute fluid viscosity</a>
