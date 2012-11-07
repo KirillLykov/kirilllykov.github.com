@@ -4,7 +4,7 @@
   <title><![CDATA[K. Lykov Blog]]></title>
   <link href="http://KirillLykov.github.com/atom.xml" rel="self"/>
   <link href="http://KirillLykov.github.com/"/>
-  <updated>2012-10-22T16:43:03+02:00</updated>
+  <updated>2012-11-07T11:36:05+01:00</updated>
   <id>http://KirillLykov.github.com/</id>
   <author>
     <name><![CDATA[Kirill Lykov]]></name>
@@ -24,10 +24,7 @@ I describe how to use this approach in LAMMPS.</p>
 <!--more-->
 
 
-<ol>
-<li>Run LAMMPS with the following script</li>
-</ol>
-
+<p>(1) Run LAMMPS with the following script</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -99,33 +96,30 @@ I describe how to use this approach in LAMMPS.</p>
 </span><span class='line'>pair_coeff  1 1 25.0 45.0 1.0
 </span><span class='line'>
 </span><span class='line'>thermo          500
-</span><span class='line'>timestep 0.001
+</span><span class='line'>timestep 0.01
 </span><span class='line'>
 </span><span class='line'>fix 1 all nve
 </span><span class='line'>fix 2 all addforce -0.055 0.0 0.0 region left
 </span><span class='line'>fix 3 all addforce 0.055 0.0 0.0 region right
-</span><span class='line'>fix 4 all ave/spatial 10 100 10000 z center 0.5 vx file vel-visc.txt
+</span><span class='line'>fix 4 all ave/spatial 50 1000 50000 z center 0.5 vx file vel-visc.txt
 </span><span class='line'>
-</span><span class='line'>run 20000</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>run 100000</span></code></pre></td></tr></table></div></figure>
 
 
-<ol>
-<li>Open vel-visc and copy in a separate document data for one time step.</li>
-<li>Open gnuplot, type</li>
-</ol>
+<p>(2) Open vel-visc and copy in a separate document data for one time step.</p>
 
+<p>(3) Open gnuplot, type:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The result should be something like:
-<img src="../../../../../images/velprofile1.png" width="300"></p>
+<img src="../../../../../images/velprofile1.png" width="400"></p>
 
-<ol>
-<li>From analytical solution for the problem, it is known that v(x)=alpha<em>(x</em>D - x<em>x). In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha</em>(x<em>14 + x</em>x). Then type</li>
-</ol>
-
+<p>(4) From analytical solution for the problem, it is known that v(x)=alpha*(x*D - x*x). Where alpha=p*g/(2*n), p - is numeric density(3.0 in our case,
+determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
+In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha<em>(x</em>14 + x*x). Then type</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -135,8 +129,8 @@ I describe how to use this approach in LAMMPS.</p>
 </span><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4, f(x)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be a=0.0159 and the plot looks like that:
-<img src="../../../../../images/velprofile2.png" width="300"></p>
+<p>The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:
+<img src="../../../../../images/velprofile2.png" width="400"></p>
 ]]></content>
   </entry>
   
@@ -273,7 +267,7 @@ In order to use MathExtra routines, include math_extra.h. This file contains mat
 
 <p>In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.</p>
 
-<p>The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - <group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:</p>
+<p>The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - &lt;group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -290,10 +284,31 @@ In order to use MathExtra routines, include math_extra.h. This file contains mat
 
 <p>The class Pointers contains instance of class Atom. Class atom encapsulates atoms positions, velocities, forces, etc. User can access them using particle index. Note, that particle indexes are changing every timestep because of sorting. So if you just stored position of atom from previous time step in your fix, it will not be valid on the next iteration. In order to handle this situation there are several methods which can be implemented:</p>
 
-<p>  double memory_usage - return how much memory fix uses
-  void grow_arrays(int) - do reallocation of the per particle arrays in your fix
-  void copy_arrays(int i, int j) - copy i-th per-particle information to j-th. Used when atoms sorting is performed
-  void set_arrays(int i) - sets i-th particle related information to zero</p>
+<p>  double memory_usage - return how much memory fix uses <br>
+  void grow_arrays(int) - do reallocation of the per particle arrays in your fix <br>
+  void copy_arrays(int i, int j) - copy i-th per-particle information to j-th. Used when atoms sorting is performed <br>
+  void set_arrays(int i) - sets i-th particle related information to zero  <br></p>
+
+<p>Note, that if your class implements these methods, it must call add calls of add_callback and delete_callback to constructor and destructor:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">FixSavePos</span><span class="o">::</span><span class="n">FixSavePos</span><span class="p">(</span><span class="n">LAMMPS</span> <span class="o">*</span><span class="n">lmp</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narg</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">arg</span><span class="p">)</span>  <span class="p">{</span>
+</span><span class='line'>  <span class="c1">//...</span>
+</span><span class='line'>  <span class="n">atom</span><span class="o">-&gt;</span><span class="n">add_callback</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">FixSavePos</span><span class="o">::~</span><span class="n">FixSavePos</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">atom</span><span class="o">-&gt;</span><span class="n">delete_callback</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>For instance, assume you need to write a fix which will store positions of atoms from previous timestep. You will add double** x to the header file. Than add allocation code to constructor:</p>
 
