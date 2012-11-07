@@ -7,7 +7,7 @@ categories:
 ---
 In this post I will write how to implement container using allocators. As an example of container to be developed I picked up
 2D array of elements.
-
+<!-- more -->
 <h2>Tests for container</h2>
 
 I firmly believe that tests should be developed before writing any code, especially general-purpose library code.

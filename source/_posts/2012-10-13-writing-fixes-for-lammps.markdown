@@ -86,7 +86,7 @@ In order to use MathExtra routines, include math_extra.h. This file contains mat
 
 In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.
 
-The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - <group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:
+The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - \<group_name\>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:
 ```c++
 for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
   if (atom->mask[i] & groupbit) {
@@ -96,10 +96,22 @@ for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
 ```
 The class Pointers contains instance of class Atom. Class atom encapsulates atoms positions, velocities, forces, etc. User can access them using particle index. Note, that particle indexes are changing every timestep because of sorting. So if you just stored position of atom from previous time step in your fix, it will not be valid on the next iteration. In order to handle this situation there are several methods which can be implemented:
 
-  double memory_usage - return how much memory fix uses
-  void grow_arrays(int) - do reallocation of the per particle arrays in your fix
-  void copy_arrays(int i, int j) - copy i-th per-particle information to j-th. Used when atoms sorting is performed
-  void set_arrays(int i) - sets i-th particle related information to zero 
+  double memory_usage - return how much memory fix uses <br>
+  void grow_arrays(int) - do reallocation of the per particle arrays in your fix <br>
+  void copy_arrays(int i, int j) - copy i-th per-particle information to j-th. Used when atoms sorting is performed <br>
+  void set_arrays(int i) - sets i-th particle related information to zero  <br>
+
+Note, that if your class implements these methods, it must call add calls of add_callback and delete_callback to constructor and destructor:
+```
+FixSavePos::FixSavePos(LAMMPS *lmp, int narg, char **arg)  {
+  //...
+  atom->add_callback(0);
+}
+
+FixSavePos::~FixSavePos() {
+  atom->delete_callback(id,0);
+}
+```
 
 For instance, assume you need to write a fix which will store positions of atoms from previous timestep. You will add double** x to the header file. Than add allocation code to constructor:
 ```
