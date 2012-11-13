@@ -201,6 +201,8 @@ User must understand when he want to execute his code.</p>
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
 </pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="n">FixPrint2</span><span class="o">::</span><span class="n">end_of_step</span><span class="p">()</span>
 </span><span class='line'><span class="p">{</span>
 </span><span class='line'>  <span class="kt">double</span><span class="o">**</span> <span class="n">v</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">;</span>
@@ -215,9 +217,11 @@ User must understand when he want to execute his code.</p>
 </span><span class='line'>  <span class="n">memset</span><span class="p">(</span><span class="n">globalAverageVelocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
 </span><span class='line'>  <span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">localAverageVelocity</span><span class="p">,</span> <span class="n">globalAverageVelocity</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">MPI_DOUBLE</span><span class="p">,</span> <span class="n">MPI_SUM</span><span class="p">,</span> <span class="n">world</span><span class="p">);</span>
 </span><span class='line'>  <span class="n">MathExtra</span><span class="o">::</span><span class="n">scale3</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">globalAverageVelocity</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">”</span>
-</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">“</span>
-</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">comm</span><span class="o">-&gt;</span><span class="n">me</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">”</span>
+</span><span class='line'>      <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">“</span>
+</span><span class='line'>      <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
