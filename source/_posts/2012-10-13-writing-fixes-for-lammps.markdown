@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):
+Writing fixes is the main way of extending LAMMPS.  User can implement many things using fixes, including (but not limited):<br>
 ·      changing particles characteristics (positions, velocities, forces, etc.). Example: fix_freeze.<br>
 ·      reading/writing data. Example: fix_restart.<br>
 ·      implementing boundary conditions. Example: fix_wall*.<br>
@@ -63,7 +63,8 @@ post_force
 final_integrate
 end_of_step
  
-These methods are called in predefined order during the execution of verlet algorithm (look at the method void Verlet::run(int n) in verlet.cpp). I listed them in this order. User must understand when he want to execute his code.
+These methods are called in predefined order during the execution of verlet algorithm (look at the method void Verlet::run(int n) in verlet.cpp). I listed them in this order. 
+User must understand when he want to execute his code.
  
 In case if we want to write print2 fix, we need only end_of_step.
 ```c++
@@ -71,22 +72,28 @@ void FixPrint2::end_of_step()
 {
   double** v = atom->v;
   int nlocal = atom->nlocal;
-  double averageVelocity[3];
-  memset(averageVelocity, 0, 3 * sizeof(double));
+  double localAverageVelocity[4]; //4th element for particles count
+  memset(localAverageVelocity, 0, 4 * sizeof(double));
   for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
-    MathExtra::add3(averageVelocity, v[indexOfParticle], averageVelocity);
+    MathExtra::add3(localAverageVelocity, v[indexOfParticle], localAverageVelocity);
   }
-  MathExtra::scale3(1.0 / nlocal, averageVelocity);
-  std::cout << averageVelocity[0] << “, ”
-    << averageVelocity[1] << “, “ 
-    << averageVelocity[2] << std::endl;
+  localAverageVelocity[3] = nlocal;
+  double globalAverageVelocity[4];
+  memset(globalAverageVelocity, 0, 4 * sizeof(double));
+  MPI_Allreduce(localAverageVelocity, globalAverageVelocity, 4, MPI_DOUBLE, MPI_SUM, world);
+  MathExtra::scale3(1.0 / globalAverageVelocity[3], globalAverageVelocity);
+  std::cout << globalAverageVelocity[0] << “, ”
+    << globalAverageVelocity[1] << “, “ 
+    << globalAverageVelocity[2] << std::endl;
 }
 ``` 
 In order to use MathExtra routines, include math_extra.h. This file contains math functions to work with arrays of doubles as with math vectors.
 
-In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.
+In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. 
+Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.
 
-The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - \<group_name\>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:
+The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - \<group_name\>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  \"group_name == all\", but it can be any group. 
+In order to use this group information, use groupbit which is defined in class Fix:
 ```c++
 for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
   if (atom->mask[i] & groupbit) {
@@ -102,7 +109,7 @@ The class Pointers contains instance of class Atom. Class atom encapsulates atom
   void set_arrays(int i) - sets i-th particle related information to zero  <br>
 
 Note, that if your class implements these methods, it must call add calls of add_callback and delete_callback to constructor and destructor:
-```
+```c++
 FixSavePos::FixSavePos(LAMMPS *lmp, int narg, char **arg)  {
   //...
   atom->add_callback(0);
@@ -114,11 +121,11 @@ FixSavePos::~FixSavePos() {
 ```
 
 For instance, assume you need to write a fix which will store positions of atoms from previous timestep. You will add double** x to the header file. Than add allocation code to constructor:
-```
+```c++
 memory->create(this->x, atom->nmax, 3, "FixSavePos:x");
 ```
 Free memory at destructor:
-```
+```c++
 memory->destroy(x);
 ```
 Finally, implement mentioned methods:
@@ -150,4 +157,4 @@ void FixSavePos::set_arrays(int i)
     memset(this->x[i], 0, sizeof(double) * 3);
 }
 ```
-Now, a little bit about memory allocation: I used LAMMPS memory class which is just a bunch of template functions for allocating 1D and 2D arrays. So you need to add include “memory.h” to have access to them.
+Now, a little bit about memory allocation: I used LAMMPS memory class which is just a bunch of template functions for allocating 1D and 2D arrays. So you need to add include "memory.h" to have access to them.

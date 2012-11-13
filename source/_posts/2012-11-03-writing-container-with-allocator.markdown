@@ -25,7 +25,7 @@ linker is looking it.
 All test functions should be declared using TEST macros. The syntax is simple: TEST(<test_group_name>, \<test_name\>) { ... }
 Google test frameworks employes several macroses to check test\'s conditions. The most useful is EXPECT_EQ(arg1, arg2) which
 expects equaty of arg1 and arg2. If the condition is not sutisfied, it will not terminate the process.
-Test functions might be called from main function.
+Test functions might be called from the main function.
 ```
 #include <gtest/gtest.h>
 
@@ -94,11 +94,16 @@ I hope test above are self-explanatory.
 <h2>Implementing container</h2>
 Why do we need to use allocator? Because allocation of elements in the container may be done in several ways.
 The most common case in implemented in std::allocator but this implementation is not acceptable if your container is 
-used by several threads, processes or when you prefer to use your own memory manager. Examples of different allocators
-implementation can be found in boost: boost::mpi::allocator, boost::interprocess::allocator, boost::detail::quick_allocator.
+used by several threads, processes or when you prefer to use your own memory manager. In short, allocator provides methods
+to allocate/deallocate a raw memory block, call explicitly contructor/destructor of an object.
+Examples of different allocators implementation can be found in boost: boost::mpi::allocator, 
+boost::interprocess::allocator, boost::detail::quick_allocator, loki::SmallObjAllocator.
 
 Grid class should have two templates parameters - type of objects to be stored and allocator type. I use 
 nested template for allocator because it gives additional flexibility in comparison with class allocator = std::allocator<T>.
+Basicly, if you use nested templates you may create allocator of any time you want directly but if you use class allocator = std::allocator<T>
+then you have to call allocator::bind method to create a block of memory for another type.
+
 Grid has sizes, pointer to the block of data, and allocator instance. Allocator is declared mutable because I want to use it in
 const methods while allocators methods are not const.
 ```
