@@ -178,7 +178,8 @@ post_force
 final_integrate
 end_of_step</p>
 
-<p>These methods are called in predefined order during the execution of verlet algorithm (look at the method void Verlet::run(int n) in verlet.cpp). I listed them in this order. User must understand when he want to execute his code.</p>
+<p>These methods are called in predefined order during the execution of verlet algorithm (look at the method void Verlet::run(int n) in verlet.cpp). I listed them in this order.
+User must understand when he want to execute his code.</p>
 
 <p>In case if we want to write print2 fix, we need only end_of_step.</p>
 
@@ -196,19 +197,27 @@ end_of_step</p>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
 <span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
 </pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="n">FixPrint2</span><span class="o">::</span><span class="n">end_of_step</span><span class="p">()</span>
 </span><span class='line'><span class="p">{</span>
 </span><span class='line'>  <span class="kt">double</span><span class="o">**</span> <span class="n">v</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">;</span>
 </span><span class='line'>  <span class="kt">int</span> <span class="n">nlocal</span> <span class="o">=</span> <span class="n">atom</span><span class="o">-&gt;</span><span class="n">nlocal</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">double</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-</span><span class='line'>  <span class="n">memset</span><span class="p">(</span><span class="n">averageVelocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span class='line'>  <span class="kt">double</span> <span class="n">localAverageVelocity</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span> <span class="c1">//4th element for particles count</span>
+</span><span class='line'>  <span class="n">memset</span><span class="p">(</span><span class="n">localAverageVelocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
 </span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">indexOfParticle</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">indexOfParticle</span> <span class="o">&lt;</span> <span class="n">nlocal</span><span class="p">;</span> <span class="o">++</span><span class="n">indexOfParticle</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">MathExtra</span><span class="o">::</span><span class="n">add3</span><span class="p">(</span><span class="n">averageVelocity</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">indexOfParticle</span><span class="p">],</span> <span class="n">averageVelocity</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">MathExtra</span><span class="o">::</span><span class="n">add3</span><span class="p">(</span><span class="n">localAverageVelocity</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">indexOfParticle</span><span class="p">],</span> <span class="n">localAverageVelocity</span><span class="p">);</span>
 </span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>  <span class="n">MathExtra</span><span class="o">::</span><span class="n">scale3</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">nlocal</span><span class="p">,</span> <span class="n">averageVelocity</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">”</span>
-</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">“</span>
-</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">averageVelocity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">localAverageVelocity</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">nlocal</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">double</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+</span><span class='line'>  <span class="n">memset</span><span class="p">(</span><span class="n">globalAverageVelocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span class='line'>  <span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">localAverageVelocity</span><span class="p">,</span> <span class="n">globalAverageVelocity</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">MPI_DOUBLE</span><span class="p">,</span> <span class="n">MPI_SUM</span><span class="p">,</span> <span class="n">world</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">MathExtra</span><span class="o">::</span><span class="n">scale3</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">globalAverageVelocity</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">”</span>
+</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="err">“</span><span class="p">,</span> <span class="err">“</span>
+</span><span class='line'>    <span class="o">&lt;&lt;</span> <span class="n">globalAverageVelocity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -216,9 +225,11 @@ end_of_step</p>
 <p>
 In order to use MathExtra routines, include math_extra.h. This file contains math functions to work with arrays of doubles as with math vectors.</p>
 
-<p>In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system. Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.</p>
+<p>In this code we use atom. This object is stored in the instance of Pointers class (see pointers.h). This object contains all global information about simulation system.
+Normally, such behaviour is achieved using Singleton design pattern but here it is implemented using using protected inheritance.</p>
 
-<p>The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - &lt;group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  group_name == all, but it can be any group. In order to use this group information, use groupbit which is defined in class Fix:</p>
+<p>The code above computes average velocity for all particles in simulation. Yet you have one unused parameter in fix call from the script - &lt;group_name>. This parameter specifies the group of atoms used in the fix. So we should compute average for all particles in the simulation if  &#34;group_name == all&#34;, but it can be any group.
+In order to use this group information, use groupbit which is defined in class Fix:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
