@@ -82,9 +82,11 @@ void FixPrint2::end_of_step()
   memset(globalAverageVelocity, 0, 4 * sizeof(double));
   MPI_Allreduce(localAverageVelocity, globalAverageVelocity, 4, MPI_DOUBLE, MPI_SUM, world);
   MathExtra::scale3(1.0 / globalAverageVelocity[3], globalAverageVelocity);
-  std::cout << globalAverageVelocity[0] << “, ”
-    << globalAverageVelocity[1] << “, “ 
-    << globalAverageVelocity[2] << std::endl;
+  if (comm->me == 0) {
+    std::cout << globalAverageVelocity[0] << “, ”
+      << globalAverageVelocity[1] << “, “ 
+      << globalAverageVelocity[2] << std::endl;
+  }
 }
 ``` 
 In order to use MathExtra routines, include math_extra.h. This file contains math functions to work with arrays of doubles as with math vectors.
