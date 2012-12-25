@@ -59,8 +59,9 @@ run 100000
 gnuplot> plot "visc_vel.txt" using 2:4
 ```
 The result should be something like:
+<center>
 <img src="../../../../../images/velprofile1.png" width="400">
-
+</center>
 (4) From analytical solution for the problem, it is known that v(x)=alpha\*(x\*D - x\*x). Where alpha=p\*g/(2\*n), p - is numeric density(3.0 in our case,
 determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
 In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha*(x*14 + x*x). Then type
@@ -71,4 +72,6 @@ gnuplot> plot "visc_vel.txt" using 2:4, f(x)
 ```
 
 The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:
+<center>
 <img src="../../../../../images/velprofile2.png" width="400">
+</center>
