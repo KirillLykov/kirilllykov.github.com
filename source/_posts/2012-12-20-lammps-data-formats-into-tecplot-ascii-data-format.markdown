@@ -25,7 +25,7 @@ fix profile all ave/spatial 50 2 100  x center 0.5 y center 0.5 z center 0.5 vx 
 This fix writes data in lammps own data format which can not be read by tecplot by default. In order to simplify your life and avoid modifying output file by hands,
 I modified this fix a little bit so if the file has extension "tec", fix writes in the tecplot data format. It is difficult to do in post processing script because tecplot
 requires information about bins in every direction. Replace you ave/spatial with 
-<a href="https://github.com/KirillLykov/lammps-extentions/blob/master/fixes/fix_ave_spatial.h">fix_ave_spatial.h</a>, <a href="https://github.com/KirillLykov/lammps-extentions/blob/master/fixes/fix_ave_spatial.cpp">fix_ave_spatial.cpp</a>, build and run LAMMPS.
+<a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.h">fix_ave_spatial.h</a>, <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.cpp">fix_ave_spatial.cpp</a>, build and run LAMMPS.
 In order to open "velprof.tec" in tecplot go File-\>Load DataFile -\> TecPlot data loader. In the left panel choose "Contour" (pick up D column, it is density). 
 Then on the same panel click on "Vector" and choose columns "VX", "VY", "VZ". I usually use slices for visualisation, in order to have slice Click "Slices" on the left panel,
 then specify properties of your slices, then go Data-\>Extract-\>Current Slices... In Zone styles panel you may define which slices are visible and which ones are not.
@@ -34,7 +34,7 @@ So at the end you might have picture like the following one:
 <img src="../../../../../images/tecplot.png" width="400">
 </center>
 In addition to that you may visualise your particles using tecplot. In order to do this, you need to use restart2data tool (lammps-\>tools),
-and then <a href="https://github.com/KirillLykov/lammps-extentions/blob/master/scripts/atom2plt.sh">atom2plt script</a>. The pipeline is the following:
+and then <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/scripts/atom2plt.sh">atom2plt script</a>. The pipeline is the following:
 ```
 restart2data your.restart your.data
 atom2plt your.data
