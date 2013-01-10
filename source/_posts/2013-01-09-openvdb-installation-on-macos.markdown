@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 <a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grid.
-I.e. it implements <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
+For instance, it can be used to work with <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
 on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7), I use openvdb v0-103-00. It is quite easy to do if you all optional packages are not used, 
 otherwise you will have to spend some time fixing mistakes in makefile and in a test. 
 First of all, you need to have <a href="http://www.macports.org/">macports</a> installed, then I would recommend to install the latest gcc.
