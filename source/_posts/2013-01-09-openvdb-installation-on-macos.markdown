@@ -1,14 +1,13 @@
 ---
 layout: post
 title: "OpenVDB build on MacOS"
-date: 2013-01-09 18:54
+date: 2013-02-04 18:54
 comments: true
 categories: 
 ---
 <a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grid.
 For instance, it can be used to work with <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
-on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7), I use openvdb v0-103-00. It is quite easy to do if you all optional packages are not used, 
-otherwise you will have to spend some time fixing mistakes in makefile and in a test. 
+on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7.5), with gcc 4.7.2 and openvdb-v0-103-1. 
 First of all, you need to have <a href="http://www.macports.org/">macports</a> installed, then I would recommend to install the latest gcc.
 After that install OpenVDB dependencies:
 ```
@@ -33,14 +32,27 @@ cd pkg-config
 pkg-config libglfw.pc
 export PKG_CONFIG_PATH=<path to directory containing libglfw.pc>
 ```
-After that you need to set up paths to libraries and includes in Makefile in the openvdb directory. I did it for my case, I would recommend to start from my Makefile.
-Just apply my <a href="https://github.com/KirillLykov/code-for-blog-and-patches/blob/master/openvdb/diff-patch-macos-openvdb-0-103-0.patch">patch</a> which also 
-fixes some problems in the code:
-```
-cd <openvdb src>
-patch -p1 < <path_to_patch>/diff-patch-macos-openvdb-0-103-0.patch
-```
-When you are done, run `make` in the OpenVDB src directory. Then you may run tests (it takes a lot of time so I would skip it).
-When I did it, I found a error (testIO) which leads to program termination. The problem is in cpp-unit I use (1.12.1), to fix it comment call of `CPPUNIT_ASSERT_NO_THROW` in the `TestCoord.cc lines 120 and 123`.
+After that you need to set up paths to libraries and includes in Makefile in the openvdb directory.
+I made several modifications in the openvdb, all of them can be extracted from the <a href="https://github.com/KirillLykov/openvdb-patches/blob/master/openvdb-0-103-1/openvdb-0-103-1-mac-os-10.7.5.patch">patch</a>:
+- modified Makefile - added boost-system-mt library, added dependencies for vdb_view and other changes
+- modified vdb_view code so it can work with OpenGL 2.1 and GLSL version 120
+- modified one test which can not be compiled without a error in the gcc4.7.2
 
+In order to apply <a href="https://github.com/KirillLykov/openvdb-patches/blob/master/openvdb-0-103-1/openvdb-0-103-1-mac-os-10.7.5.patch">patch</a>:
+```
+patch -p1 < openvdb-0-103-1-mac-os-10.7.5.patch
+```
+When you are done, run `make`, `make install` in the OpenVDB src directory. You may try to run vdb_view from the `bin` directory in the your openvdb installation path.
+In order to do that, download on of the shapes from the <a href="http://www.openvdb.org/download/">openvdb site</a>, for instance <a href="http://www.openvdb.org/download/models/icosahedron.vdb.gz">icosahedron</a> and run:
+```
+vdb_view icosahedron.vdb
+```
+The result should look like on the figure below:
+<center>
+<img src="../../../../../images/ovdb_icosahedron.png" width="400">
+</center>
+
+Then you may run tests (it takes a lot of time so I would skip it).
+When I did it, I found a error (testIO) which leads to program termination. The problem is in cpp-unit I use (1.12.1), to fix it comment call of `CPPUNIT_ASSERT_NO_THROW` in the `TestCoord.cc lines 120 and 123`.
+When you will try to use your openvdb library you may have problem: dyld cannot find an image. To fix this problem you may write `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:<path_to_your_openvdb_lib>`.
 
