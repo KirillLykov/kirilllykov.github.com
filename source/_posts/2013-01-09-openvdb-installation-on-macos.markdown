@@ -49,7 +49,7 @@ vdb_view icosahedron.vdb
 ```
 The result should look like on the figure below:
 <center>
-<img src="../../../../../images/ovdb_icosahedron.png" width="400">
+<img src="../../images/ovdb_icosahedron.png" width="400">
 </center>
 
 Then you may run tests (it takes a lot of time so I would skip it).
