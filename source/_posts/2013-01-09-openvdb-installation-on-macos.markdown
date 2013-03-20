@@ -7,9 +7,14 @@ categories:
 ---
 <a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grid.
 For instance, it can be used to work with <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
-on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7.5), with gcc 4.7.2 and openvdb-v0-103-1. 
-First of all, you need to have <a href="http://www.macports.org/">macports</a> installed, then I would recommend to install the latest gcc.
-After that install OpenVDB dependencies:
+on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7.5), with gcc 4.7.2 and openvdb-v0-103-1.
+<!--more-->
+There are two ways of building openvdb - build it under Houdini environment (you need to install houdini) and the second way using macport(no need in Houdini, 
+this way is described in the post). In order to build openvdb using Houdini, go to Applications/Houdini<version>/Houdini<version>shell.terminal. In this terminal,
+several environment variables are set (those used in the Makefile). Houdini sdk(called HDK) contains all dependencies except cppunit and glfw. If you use gcc4.6 or older,
+just `make` and everything should be built. Yet, you may have problems with vdb_view, they are fixed in the patch, have a look inside. If you use a newer version, you will have problems with the HDK's boost which is 1.46. I just renamed the folder with boost in hdk and specified path to a more recent version. Just in case if you forgot, if you want to build openvdb with `sudo`, you need to use `sudo -E` instead in order to have all environment variables on place.
+
+Now, how to build OpenVDB without using Houdini and with the modern gcc. First of all, you need to have <a href="http://www.macports.org/">macports</a> installed, then I would recommend to install the latest gcc. After that install OpenVDB dependencies:
 ```
 sudo port install boost
 sudo port install tbb
@@ -49,7 +54,7 @@ vdb_view icosahedron.vdb
 ```
 The result should look like on the figure below:
 <center>
-<img src="../../images/ovdb_icosahedron.png" width="400">
+<img src="../../../../../images/ovdb_icosahedron.png" width="400">
 </center>
 
 Then you may run tests (it takes a lot of time so I would skip it).

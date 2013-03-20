@@ -7,6 +7,7 @@ categories:
 ---
 One of the TecPlot data formats is a simple ASCI format. It is deprecated but can be opened in both TecPlot and Paraview.
 This data format has variations so further I will use it for atoms and velocity profiles visualizations.
+<!--more-->
 In the simplest case, the file consists of header section where it is needed to specify names of columns:
 ```
  VARIABLES = "BIN", "X", "Y", "Z", "N", "VX", "VY", "VZ", "D"

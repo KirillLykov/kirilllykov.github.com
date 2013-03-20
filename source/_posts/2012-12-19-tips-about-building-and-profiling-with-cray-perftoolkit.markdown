@@ -8,6 +8,7 @@ categories:
 
 Cray compiler generates <a href="http://www.nersc.gov/users/computational-systems/hopper/performance-and-optimization/compiler-comparisons/">one of the fastest code.</a> On Cray XE6 lammps compiled by Cray Compiler(8.1.2, -O2) outperform gcc code (4.7, -Ofast) in 1.6 times. If you use Cray compiler, it has sense to use Cray's perftoolkit for finding bottlenecks in your MPI/OpenMP application.
 This post is about tips about using these tools because I always forget details. I will build and analyze LAMMPS.
+<!--more-->
 Before doing something, check tools available on your system and pick up the newest one.
 To see available versions of Cray compiler:
 ```
