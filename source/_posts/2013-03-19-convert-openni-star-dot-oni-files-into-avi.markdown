@@ -18,7 +18,9 @@ In case if you use Mac OS and macport, do the following:
 sudo port install openni
 sudo port install opencv
 sudo port install boost
+git clone git://github.com/KirillLykov/oni2avi.git
+cd oni2avi
 make
 ./oni2avi <your-file-name>.oni <your-file-name>.avi --codec=FLV1
 ```
-If you need any support, please write me an email which is written in the about section of this blog.
+If you need any support, please write me an email (address is written in the About section of this blog).
