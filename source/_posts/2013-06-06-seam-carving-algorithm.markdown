@@ -6,19 +6,19 @@ comments: true
 categories: 
 ---
 ##Intro
-Seam carving is an algorithm for content-aware image resizing, it was described in the paper by [S. Avidan & A. Shamir]("http://www.win.tue.nl/~wstahw/2IV05/seamcarving.pdf"). In contract to stretching, content-aware resizing
+Seam carving is an algorithm for content-aware image resizing, it was described in the paper by [S. Avidan & A. Shamir](http://www.win.tue.nl/~wstahw/2IV05/seamcarving.pdf). In contract to stretching, content-aware resizing
 allows to remove/add pixels which has less meaning while saving more important. Pictures below demonstrate this - original picture of the size 332x480 is on the top, the picture after applying seam carving (size is 272x400) is on the bottom
 <center>
 <img src="../../../../../images/seamcarving/sea-thai.jpg">
 <img src="../../../../../images/seamcarving/sea-thai-reduced.jpg">
 </center>
-This algorithm is quite impressive so one may find a lot of articles describing this algorithm. Yet as I found most of the authors haven't read the original paper and provide very basi. In this post I will describe the algorithm with all details it was written by Avidan & Shamir. But I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.
+This algorithm is quite impressive so one may find a lot of articles describing this algorithm. Yet as I found most of the authors haven't read the original paper and provide very basic implementation. In this post I will describe the algorithm with all details it was written by Avidan & Shamir. But I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.
 <!--more-->
 ##Energy
 For simplification, we will describe only reducing the size of the image. But enlarging process is very similar and described in the last section. 
 The idea is to remove content that has smaller meaning for the user (contain less information). We will call this information "energy". Thus we need to introduce an energy function that would map a pixel into
 energy value. For instance, we can use gradient of the pixel: <img src="http://latex.codecogs.com/gif.latex?e_1= \left|\frac{\partial I}{\partial x}\right| + \left|\frac{\partial I}{\partial y}\right|" style="border: none; box-shadow: none;vertical-align:middle"/>. If a picture has 3 channels, just sum values of the energy in each channel. The Matlab code below demostates it. The `imfilter` function just applies the mask to each pixel, so the result dI(i, j)/dx = I(i+1)-I(i-1)/dx where dx = 1. 
-```
+```matlab
 function res = energyRGB(I)
 % returns energy of all pixelels
 % e = |dI/dx| + |dI/dy|
@@ -36,7 +36,7 @@ Here is energy function:
 <img src="../../../../../images/seamcarving/sea-thai-energy.jpg">
 </center>
 ##Seam
-If we delete pixels with minimum energy but random positions, we will get distorted picture. If we delete columns/rows with minimum energy, we will get artifacts. The solution is to introduce a generalization of column/row (called `seam`). Formally, let I is n x m image, then a vertical seam is <img src="http://latex.codecogs.com/gif.latex?(s^x)_i=(i, x(j)) s.t. \forall i, \left|x(i) - x(i-1)\right| \leq 1" style="border: none; box-shadow: none;vertical-align:middle"/>, where x:[1,..,n]->[1,..,m]. It means that a vertical seam is path from the top of the picture to the bottom such that the length of the path in pixels is width of the image, and for each seam element (i,j),
+If we delete pixels with minimum energy but random positions, we will get distorted picture. If we delete columns/rows with minimum energy, we will get artifacts. Here by column I mean {(i, j)| j is predefined}, row - {(i, j)| i is predefined}. The solution is to introduce a generalization of column/row (called `seam`). Formally, let I is n x m image, then a vertical seam is <img src="http://latex.codecogs.com/gif.latex?(s^x)_i=(i, x(j)) s.t. \forall i, \left|x(i) - x(i-1)\right| \leq 1" style="border: none; box-shadow: none;vertical-align:middle"/>, where x: [1,..,n] -> [1,..,m]. It means that a vertical seam is path from the top of the picture to the bottom such that the length of the path in pixels is width of the image, and for each seam element (i,j),
 the next seam element can be only (i+1, j-1), (i+1, j), (i+1, j+1). Similarly, we can define a horizontal seam. Examples of seams are shown on the figure below in black:
 <center>
 <img src="../../../../../images/seamcarving/sea-thai-seams.jpg">
@@ -260,6 +260,6 @@ function imageEnlarged = enlargeImageByMaskHorizontal(image, seamMask)
 end
 ```
 ##Source code
-The full code of the program is available [here]("https://github.com/KirillLykov/cvision-algorithms/blob/master/seamCarving.m").
-Seam carving is also implemented in [ImageMagick]("http://www.imagemagick.org/Usage/resize/#liquid-rescale"). So if you need a
+The full code of the program is available [here](https://github.com/KirillLykov/cvision-algorithms/blob/master/seamCarving.m).
+Seam carving is also implemented in [ImageMagick](http://www.imagemagick.org/Usage/resize/#liquid-rescale). So if you need a
 C++ implementation, check out ImageMagick code.
