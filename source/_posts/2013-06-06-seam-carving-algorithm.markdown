@@ -49,7 +49,7 @@ The way to find such an optimal way is by using dynamic programming:
    * fill in the first row by energy
    * for all rows starting from second: 
        M[i, j] = e[i, j] + min(M[i - 1, j], M[i, j], M[i - 1, j]); 
-2. Find the minimum value in the last row of M and traverse back chousing pixels with minimum energy.
+2. Find the minimum value in the last row of M and traverse back choosing pixels with minimum energy.
 
 
 Note that in Matlab code I had to represent seam as n x m bit matrix. If pixel is in the seam it is 0, otherwise 1.
