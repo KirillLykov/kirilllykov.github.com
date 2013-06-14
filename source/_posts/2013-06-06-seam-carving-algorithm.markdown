@@ -233,7 +233,7 @@ end
 ##Enlarging an image
 In order to enlarge a picture, we compute k optimal seams for deleting but then, instead of deleting, copy average between neighbors:
 ```matlab
-unction imageEnlarged = enlargeImageByMaskVertical(image, seamMask)
+function imageEnlarged = enlargeImageByMaskVertical(image, seamMask)
 
     avg = @(image, i, j, k) (image(i, j-1, k) + image(i, j+1, k))/2;
 
@@ -260,6 +260,6 @@ function imageEnlarged = enlargeImageByMaskHorizontal(image, seamMask)
 end
 ```
 ##Source code
-The full code of the program is available [here](https://github.com/KirillLykov/cvision-algorithms/blob/master/seamCarving.m).
+The full code of the program is available [here](https://github.com/KirillLykov/cvision-algorithms/blob/master/src/seamCarving.m).
 Seam carving is also implemented in [ImageMagick](http://www.imagemagick.org/Usage/resize/#liquid-rescale). So if you need a
 C++ implementation, check out ImageMagick code.
