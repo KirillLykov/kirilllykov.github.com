@@ -12,7 +12,7 @@ allows to remove/add pixels which has less meaning while saving more important. 
 <img src="../../../../../images/seamcarving/sea-thai.jpg">
 <img src="../../../../../images/seamcarving/sea-thai-reduced.jpg">
 </center>
-This algorithm is quite impressive so one may find a lot of articles describing this algorithm. Yet as I found most of the authors haven't read the original paper and provide very basic implementation. In this post I will describe the algorithm with all details it was written by Avidan & Shamir. But I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.
+This algorithm is quite impressive so one may find a lot of articles describing it. Yet as I found most of the authors haven't read the original paper and provide a very basic implementation. In this post I will describe the algorithm with all details as it was written by Avidan & Shamir. Yet I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.
 <!--more-->
 ##Energy
 For simplification, we will describe only reducing the size of the image. But enlarging process is very similar and described in the last section. 
@@ -48,7 +48,7 @@ The way to find such an optimal way is by using dynamic programming:
 1. Find M - minimum energy for all possible seams for each (i, j):
    * fill in the first row by energy
    * for all rows starting from second: 
-       M[i, j] = e[i, j] + min(M[i - 1, j], M[i, j], M[i - 1, j]); 
+       M[i, j] = e[i, j] + min(M[i - 1, j], M[i, j], M[i + 1, j]); 
 2. Find the minimum value in the last row of M and traverse back choosing pixels with minimum energy.
 
 
@@ -117,8 +117,8 @@ end
 ```
 It is already a good tool for reducing image in one dimension - just find and delete seam as many times as you need. But what if you need to reduce the
 size of the image in both directions? How to decide at every iteration whether it is better (in terms of energy minimization) to delete a column or a row?
-This problem is solved, again, using dynamic programming. We introduce a transport matrix T which defines for every n' x m' the cost of the optimal sequence 
-of horizontal and vertical seam removal operations (n' < n, m' < m). It is more suitable to introduce r = n - n' and c = m - m' which defines number of horizontal
+This problem is solved, again, using dynamic programming. Let n' x m' are desirable size of the image (n' < n, m' < m). We introduce a transport matrix T which defines for every n' x m' the cost of the optimal sequence 
+of horizontal and vertical seam removal operations. It is more suitable to introduce r = n - n' and c = m - m' which defines number of horizontal
 and vertical removal operations. In addition to T we introduce a map of the size r x c TBM which specifies for every T(i, j) whether we came to this point using 
 horizontal (0) or vertical (1) seam removal operation. Pseudocode is shown below:
 
