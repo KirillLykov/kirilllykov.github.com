@@ -45,20 +45,12 @@ Email: lykov dot kirill at gmail dot com<br>
 
 <h2 id='aboutblog' >About this blog</h2>
 <p>  This blog was created to save thoughts about programming and some tips&tricks I found while working.
- Hence, it is about things I'm doing at work - C++, HPC, LAMMPS, teaching Java.
+ Hence, it is about things I'm doing at work - C++, HPC, Computer Vision, LAMMPS, teaching Java.
 </p>
 
 <h2 id='bio' >My bio</h2>
 <p>  
-I'm an enthusiastic programmer and enjoy solving challenging problems as well as learning new fields/technologies. I started writing programs when I was fifteen and still like it. Being at High School (High College of Informatics) I was implementing classical Computer Science algorithms on C, learned OpenGL and Java. My favorite project at that time was a translator from Pascal to Java. This school was a right place and there I met many geeks who became superior software engineers. <br><br>
-After that I studied Mathematics for 5 years. Yeah, It was really interesting and challenging at the same time, especially Mathematical Logic - those who saw the proof of the Gödel theorem about incompleteness would understand me. Yet at this department there was a lack of programming courses so in free time I studied C++ (thank you Stroustrup, Satter, Alexandresku and other) and even played with gpgpu and Cg. The funny thing is in 2007 everyone around thought that it is crazy to compute something on GPU. It taught me that sometimes one should not believe community. <br>
-When I was 20 years old I got my first Software Developer position. And I was really happy about that (I’m a programmer! The dream came true!). It was marvelous company with very smart people (called Ledas) yet it was very math-oriented. In this time I was greedy about technologies and wanted to learn as much as possible. Thus I got another job where I had opportunity to write C++, C#, Java, JavaScript code for this GIS. Details are in <a href="../../docs/CV-Kirill-Lykov.pdf">CV</a>. <br><br>
-After working for a while for the industry, I and a friend of mine came to decision that there is a lack of good courses about programming at Mathematical department. Furthermore, most of them were developed by scientists who had, well, a different point of view on the software development than engineers. I and Mikerin created a course called "Design Patterns" which attracted the most promising programming-oriented students from the faculty. This time I also organized other activities - English club, lectures for programmers 
-by programmers (V8, Google Native Client). <br><br>
-In 2011, I suddenly left Russia and industry for a PhD student position at University of Italian Switzerland. Since this time I’m doing research in biophysics (real HPC  
-with 128-512 cores). There is a lot of physics and a bit of computational geometry. Why did I go to academia? Just because I like adventures, in addition it looked challenging and, anyway, I decided that the time to change location came. You know - if everything were too predictable, the life would be boring.
-Programming is not the only interest I have - I was also playing metal in various bands and go to gym. I like scotch whisky and mixing cocktails – but to write about this topic I need to create a separate blog.
-
+I'm an enthusiastic programmer and a researcher. I enjoy solving challenging problems as well as learning new fields and technologies. I started writing programs when I was fifteen and still like it. Since I was 20 years old I'm Software Engineer, I took part into developing software for CAD and GIS industries (check CV for details). At the same time I graduated from Mathematical department of Novosibirsk State University. Being both mathematician and programmer I'm interested in fields where these two words are intersecting - high performance computations, fluid dynamics, computer vision, shape analysis, and physical based computer graphics. Check out my blog posts and github and let me know if you have some ideas of collaboration regarding things I'm interested in.<br><br>
 </p>
 
 

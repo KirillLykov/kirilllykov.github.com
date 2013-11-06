@@ -23,4 +23,13 @@ cd oni2avi
 make
 ./oni2avi <your-file-name>.oni <your-file-name>.avi --codec=FLV1
 ```
-If you need any support, please write me an email (address is written in the About section of this blog).
+If you need any support, please write to <a href="https://github.com/KirillLykov/oni2avi/issues">issues</a>, click button "New Issue" and then add a proper label - bug or question.
+An alternative option is to write to my email (address is written in the About section of this blog).
+
+
+__UPD__: Since I shared this tool, I've got many letters with questions. Primarily from students who are doing something with Kinect. The most questions are about building oni2avi, so below are some recomendations:
+
+* pathes for libraries and includes in the Makefile are set to the default location for the case you are using MacOS+Macport or Ubuntu+standartPackageInstaller.
+Thus if you have libs or includes in a different place, you need to specify where they are in the Makefile
+* if you see a compilation error, please check that all pathes are correc. If you are on Ubuntu, also check whether you need -dev packages to have includes. Finally, check the version of libraries you are using. I suppose that OpenCV version >= 2.3, boost version >= 1.48, OpenNI version >= 1.53
+* if you've found a bug, specify a version of libraries you use, command line options for the tool, and input/output files you've got.
