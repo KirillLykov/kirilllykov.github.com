@@ -9,7 +9,7 @@ categories:
 || :-: | :-: | :-: | :-: |
 |<img src="../../../../../images/curv-flow/bunny1.png" style="scale: 0.1">| ![alt text](../../../../../images/curv-flow/bunny2.png "") | ![alt text](../../../../../images/curv-flow/bunny3.png "") | ![alt text](../../../../../images/curv-flow/bunny4.png "") |
 
-Recently I came across an amazing paper ["Robust fairing via Conformal Curvate flow" by K. Crane et al.](http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf) at SIGGRAH 2013 and decided to reproduce the results.
+BBBBBBBBB Recently I came across an amazing paper ["Robust fairing via Conformal Curvate flow" by K. Crane et al.](http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf) at SIGGRAH 2013 and decided to reproduce the results.
 The basic idea of the approach is in usage of the principal curvatures instead of vertex coordinate itself for the solution of PDE. Roughly speaking, at each iteration for every vertex the curvature is computed, than modified according to the chosen PDE, and, finally, a new position is restored out of the curvature. So for instance, you want to edit your surface or curve using Willmore flow, traditionally it is 
 evaluated in terms of positions of  vertecies themself, it involves spatial dirivatives, Laplace-Beltrami operator depending on positions. Thus the implementation is complicated and the numerical scheme requires small time steps to converge. By constrast, reformulataion of the problem in terms of curvature gives a very simple numerical scheme, which works with much bigger time steps (in current work 10^8 times bigger). In addition to that, this reformulation allows to
 preserve desired properties of the manifold (e.g. length, angle).
