@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Java Modeling Language - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="Java Modeling Language is a Design by Contract(DBC) specification language for Java programs. DBC is a programming methodology,
+which was introduced &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2012/10/12/initial-post/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Java Modeling Language</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-12T16:40:00+02:00" pubdate data-updated="true">Oct 12<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Java Modeling Language is a Design by Contract(DBC) specification language for Java programs. DBC is a programming methodology,
+which was introduced by B. Meyer and implemented in Eiffel programming language. The idea is pretty simple – a program component must do exactly
+what is described in the contract. Hence, a user of the component may learn about it using the contract, the implementation of the component
+might be different by must follow the contract. In Object Oriented languages a component is a class and a contract regulates the state of an object as well as behavior.
+Using JML a programmer may specify the contract for methods and attributes. It is written as a comment in the class and
+translated by the JML compiler into the Java code.</p>
+
+<!--more-->
+
+
+<p>Lets have a look at the example:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">Building</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">floorsNumber</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAX_FLOOR</span> <span class="o">=</span> <span class="mi">300</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">//@ invariant getFloorsNumber() &gt;= 0 &amp;&amp; </span>
+</span><span class='line'>  <span class="c1">//@    getFloorsNumber() &lt; MAX_FLOOR;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">//@ requires newFloors &lt; MAX_FLOOR;</span>
+</span><span class='line'>  <span class="c1">//@ ensures getFloorNumber () &lt; MAX_FLOOR;</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="nf">addNewFloors</span><span class="o">(</span><span class="kt">int</span> <span class="n">newFloors</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">floorsNumber</span> <span class="o">+=</span> <span class="n">newFloors</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">//@ pure</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="nf">getFloorNumber</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">floorsNumber</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In this example, Building’s contract for the state specifies that the number of floors must be non-negative and not exceed the specified limit.
+The keyword invariant is used to specify a contract for the object state. Method addNewFloors has prerequrement (“requires” keyword) that newFloors
+is less than the limit and postreqirement (“ensures” keyword) that floorsNumber is less than the limit. The keyword “pure”(near getFloorNumber)
+tells to the JML translator that this method doesn’t have side effects and might be used in JML specifications.</p>
+
+<p>As you may see the syntax of the JML specification is comprehensible and can be understood even without knowledge in the domain.
+The JML code is kind of developed assertions ensures that some assumptions written as predicates are true.</p>
+
+<p>The JML syntax is quite expressive so a programmer can write sophisticated predicates with loops, sums and other constructions.
+For instance, the JML specification for the method sorting array may look like that:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*@ ensures </span>
+</span><span class='line'><span class="cm">(\forall int i; 0 &lt;= i &amp;&amp; i &lt; a.length-1;</span>
+</span><span class='line'><span class="cm">a[i] &lt; a[i+1]);</span>
+</span><span class='line'><span class="cm">@*/</span>
+</span><span class='line'><span class="kt">byte</span><span class="o">[]</span> <span class="nf">sort</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">a</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you are interested you may read about syntax of JML at the <a href="http://www.eecs.ucf.edu/~leavens/JML/papers.shtml">JML web site</a>.</p>
+
+<p>Now I will write about technical problems with JML. There are several JML compilers available – JML 5.4, Esc, OpenJML. The problem is
+that all of them are developed more as a proof of concept than really working application.  Hence, they are buggy and are not well supported.
+The JML 5.4 is the most reliable one yet it works only with Java 1.4. The OpenJML should have substituted JML 5.4 but at the current
+moment it is just a prototype. The sad thing about it is the development was stopped one year ago.
+If you want to try JML5.4, download <a href="http://www2.icorsi.ch/mod/resource/view.php?id=54421">it</a>, add environment variable JML = &lt;path to JML>.
+To compile your application:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="n">cp</span> <span class="s">&quot;$JML/bin/jml-release.jar:$JML/specs:.&quot;</span> <span class="n">org</span><span class="o">.</span><span class="na">jmlspecs</span><span class="o">.</span><span class="na">jmlrac</span><span class="o">.</span><span class="na">Main</span> <span class="s">&quot;&lt;your *.java&gt;&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To run it:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="n">cp</span> <span class="s">&quot;${JML}/bin/jmlruntime.jar:.&quot;</span> <span class="n">$</span><span class="o">*</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I think, it could be a good master thesis to make a working application out of OpenJML. If you think that it is not scientific enough,
+there are several PhD dissertations at leading CS universities dedicated to development of DbC compilers for various languages.
+Most of these languages are never used in industry. At the same time JML is used by at least students studying verification and similar courses so this work would be, not doubt, useful.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-10-12T16:40:00+02:00" pubdate data-updated="true">Oct 12<span>th</span>, 2012</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2012/10/12/initial-post/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2012/10/12/initial-post/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/10/13/writing-fixes-for-lammps/" title="Next Post: How to write fix for LAMMPS">How to write fix for LAMMPS &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB build on MacOS</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Convert OpenNI (*.oni) files into avi - oni2avi - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="OpenNI is a library for work with Kinect camera. I prefer to use it instead of .net libraries from Microsoft because OpenNI is more open
+and, I think &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Convert OpenNI (*.oni) Files Into Avi - Oni2avi</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-19T23:27:00+01:00" pubdate data-updated="true">Mar 19<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>OpenNI is a library for work with Kinect camera. I prefer to use it instead of .net libraries from Microsoft because OpenNI is more open
+and, I think, it is a more natural to use it on on unix systems.
+OpenNI saves video and depth map obtained from Kinect camera into it&#8217;s own data format oni. Sometimes it is desirable to have avi files instead because there are
+a lot of code made for this format. So I wrote a simple command line converter from oni to avi data format available <a href="https://github.com/KirillLykov/oni2avi">oni2avi</a>.
+I developed it because one friend of mine who is using Matlab asked me to help him in converting oni file to avi. There is a plugin to Matlab which allows
+to read oni files directly but for whatever reason he could not use it. Hope, this code will be usefull for someone else.
+Oni2Avi needs OpenNI, OpenCV and boost. Please, read README file. In addition, you must to use a modern C++ compiler. If you use gcc, it must be 4.6 or newer.
+In case if you use Mac OS and macport, do the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo port install openni
+</span><span class='line'>sudo port install opencv
+</span><span class='line'>sudo port install boost
+</span><span class='line'>git clone git://github.com/KirillLykov/oni2avi.git
+</span><span class='line'>cd oni2avi
+</span><span class='line'>make
+</span><span class='line'>./oni2avi &lt;your-file-name&gt;.oni &lt;your-file-name&gt;.avi --codec=FLV1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you need any support, please write to <a href="https://github.com/KirillLykov/oni2avi/issues">issues</a>, click button &#8220;New Issue&#8221; and then add a proper label - bug or question.
+An alternative option is to write to my email (address is written in the About section of this blog).</p>
+
+<p><strong>UPD</strong>: Since I shared this tool, I&#8217;ve got many letters with questions. Primarily from students who are doing something with Kinect. The most questions are about building oni2avi, so below are some recomendations:</p>
+
+<ul>
+<li>pathes for libraries and includes in the Makefile are set to the default location for the case you are using MacOS+Macport or Ubuntu+standartPackageInstaller.
+Thus if you have libs or includes in a different place, you need to specify where they are in the Makefile</li>
+<li>if you see a compilation error, please check that all pathes are correc. If you are on Ubuntu, also check whether you need -dev packages to have includes. Finally, check the version of libraries you are using. I suppose that OpenCV version >= 2.3, boost version >= 1.48, OpenNI version >= 1.53</li>
+<li>if you&#8217;ve found a bug, specify a version of libraries you use, command line options for the tool, and input/output files you&#8217;ve got.</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-19T23:27:00+01:00" pubdate data-updated="true">Mar 19<span>th</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/04/openvdb-installation-on-macos/" title="Previous Post: OpenVDB build on MacOS">&laquo; OpenVDB build on MacOS</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/04/02/level-set-openvdb-intro-1/" title="Next Post: Level sets with OpenVDB. Quick introduction. Part 1">Level sets with OpenVDB. Quick introduction. Part 1 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB build on MacOS</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

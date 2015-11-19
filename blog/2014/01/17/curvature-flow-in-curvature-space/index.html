@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Curvature flow in curvature space - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="BBBBBBBBB Recently I came across an amazing paper &#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al. at SIGGRAH 2013 and &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Curvature Flow in Curvature Space</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T09:39:00+01:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/bunny1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/bunny2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/bunny3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/bunny4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>BBBBBBBBB Recently I came across an amazing paper <a href="http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf">&#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al.</a> at SIGGRAH 2013 and decided to reproduce the results.
+The basic idea of the approach is in usage of the principal curvatures instead of vertex coordinate itself for the solution of PDE. Roughly speaking, at each iteration for every vertex the curvature is computed, than modified according to the chosen PDE, and, finally, a new position is restored out of the curvature. So for instance, you want to edit your surface or curve using Willmore flow, traditionally it is
+evaluated in terms of positions of  vertecies themself, it involves spatial dirivatives, Laplace-Beltrami operator depending on positions. Thus the implementation is complicated and the numerical scheme requires small time steps to converge. By constrast, reformulataion of the problem in terms of curvature gives a very simple numerical scheme, which works with much bigger time steps (in current work 10<sup>8</sup> times bigger). In addition to that, this reformulation allows to
+preserve desired properties of the manifold (e.g. length, angle).</p>
+
+<p>Crane et. al. created a general framework and applied it to 1D manifolds (curves) and 2D manifolds (surfaces). I reproduced results only for the 1D case, since 2D is much more time consuming - working with group of quaternions, half-densities, and dirac operator - is too much for a hobby project.</p>
+
+<!--more-->
+
+
+<p>Fist of all, I would recommend to read materals for the course in <a href="http://brickisland.net/cs177fa12/?p=320">Discrete Differential Geometry</a> provided by K. Crane. There one might find a very detailed explanation of the length-preserving
+curvature flow in the curvature space, described in the paper. In addition to that, there are formulas for the standard Willmore flow for the curve and nice scatches. You also might find some details in Crane&#8217;s dissertation, but primarily if you want to implement a 3D case (there is a discretization of the Dirac operator, explanation of the exterior calculus on quaternions, many proofs used for the theorems used in the paper, etc). At the moment of the writing this post, authors of the paper didn&#8217;t shared their implementation for the isometric curvature flow, so I implemented it by myself (but sometimes asking K.Crane about some details, he was very helful).</p>
+
+<p>The text will be structures as follows. First, I will give basic definitions. Than I will describe the approach by Crane et al. and show some simulation results on the models provided by K. Crane. Finally, I will briefly describe a standard Willmore flow and show simulation result for comparison.</p>
+
+<h2>Definitions</h2>
+
+<p>Definition:  <img src="http://latex.codecogs.com/gif.latex?f:M \rightarrow \mathbb{R}^n" style="border: none; box-shadow: none;vertical-align:middle"/>, where M - (n-1)-manifold with boundary  <img src="http://latex.codecogs.com/gif.latex?\partial{M}" style="border: none; box-shadow: none;vertical-align:middle"/> is called  <em>immersion</em> if  <img src="http://latex.codecogs.com/gif.latex?D_pf:T_p M \rightarrow T_{f(p)} \mathbb{R}^n" style="border: none; box-shadow: none;vertical-align:middle"/> is injective map.</p>
+
+<p>Definition: let f be an immersion of a manifold M into Euclidean space, and suppose that E is a real-valued function of f. Then a <em>curvature flow</em> is the solution to the partial differential equation
+ <img src="http://latex.codecogs.com/gif.latex?\dot{f} = - \nabla{E(f)}" style="border: none; box-shadow: none;vertical-align:middle"/>. We call E <em>energy</em>.</p>
+
+<p>Common choices of energies are the <em>Dirichlet energy</em>  <img src="http://latex.codecogs.com/gif.latex?E_D(f) = \frac{1}{4} \int\limits_M |\nabla f|^2 \mathrm{d}A" style="border: none; box-shadow: none;vertical-align:middle"/> and the <em>Willmore energy</em>
+  <img src="http://latex.codecogs.com/gif.latex?E_w(f)=\int\limits_M H^2 \mathrm{d}A" style="border: none; box-shadow: none;vertical-align:middle"/>, where H is a mean curvature (for M without border). Further, we will work with Willmore energy. Further, Willmore energy is employed.</p>
+
+<p> It is easy to show that energies can be rewritten as  <img src="http://latex.codecogs.com/gif.latex?E_D=\ll\Delta f, f\gg" style="border: none; box-shadow: none;vertical-align:middle"/> and <img src="http://latex.codecogs.com/gif.latex?$E_W = \ll \Delta f, \Delta f \gg = \ll \Delta^2 f, f\gg" style="border: none; box-shadow: none;vertical-align:middle"/>, where  <img src="http://latex.codecogs.com/gif.latex?\ll,\gg" style="border: none; box-shadow: none;vertical-align:middle"/> denotes inner product in  <img src="http://latex.codecogs.com/gif.latex?L^2" style="border: none; box-shadow: none;vertical-align:middle"/>.
+ <img src="http://latex.codecogs.com/gif.latex?\Delta" style="border: none; box-shadow: none;vertical-align:middle"/> denotes Laplace-Beltrami operator, note that it itself depends on the immersion f. It leads to non-linearity of the corresponding flow equations formulated in terms of immersions.</p>
+
+<p>In their work Crane et al. created an implementation for both 1D and 2D manifold. I will consider Willmore flow only curves. Let describe the geometry of the curve via an immersion  <img src="http://latex.codecogs.com/gif.latex?f:I \rightarrow \mathbb{R}^2, s \rightarrow f(s)" style="border: none; box-shadow: none;vertical-align:middle"/> for interval  <img src="http://latex.codecogs.com/gif.latex?I= [0, L]" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p> We will work with two definitions of energies - one to get a Willmore flow using a standard approach  <img src="http://latex.codecogs.com/gif.latex?E_1(f)=\int\limits_0^L  k^2 \mathrm{d}s" style="border: none; box-shadow: none;vertical-align:middle"/>, another one is used for the conformal
+ Willmore flow  <img src="http://latex.codecogs.com/gif.latex?E_2(k)=\int\limits_0^L  k^2 \mathrm{d}s" style="border: none; box-shadow: none;vertical-align:middle"/>. The difference between them is in the second case it is a function of the curvature  <img src="http://latex.codecogs.com/gif.latex?k" style="border: none; box-shadow: none;vertical-align:middle"/> rather than immersion f. It allows to solve simpler PDE, having a better convergence and also restore positions in a way that preserves desired properties.</p>
+
+<h2>Standard Willmore flow</h2>
+
+<p>First consider the solution using standard approach. Let introduce notation which will be used further:  <img src="http://latex.codecogs.com/gif.latex?T=(cos(\theta), sin(\theta)" style="border: none; box-shadow: none;vertical-align:middle"/> is a tangent vector,  <img src="http://latex.codecogs.com/gif.latex?k=\frac{\mathrm d}{\mathrm d s} \left( \theta(s) \right)" style="border: none; box-shadow: none;vertical-align:middle"/> is curvature,
+ <img src="http://latex.codecogs.com/gif.latex?\ast" style="border: none; box-shadow: none;vertical-align:middle"/> denote Hodge star,  <img src="http://latex.codecogs.com/gif.latex?e^*" style="border: none; box-shadow: none;vertical-align:middle"/> means a dual edge,  <img src="http://latex.codecogs.com/gif.latex?\phi" style="border: none; box-shadow: none;vertical-align:middle"/> is an exterior angle for the dual edge, Hodge star on primal 0-form is given by
+ <img src="http://latex.codecogs.com/gif.latex?(\ast_0)_{ii}=L_i=0.5(|f_{i+1} - f_i|+|f_i - f_{i-1}|)" style="border: none; box-shadow: none;vertical-align:middle"/>. We will use the fact that <img src="http://latex.codecogs.com/gif.latex?k=\ast \phi" style="border: none; box-shadow: none;vertical-align:middle"/> to define  <img src="http://latex.codecogs.com/gif.latex?E_1" style="border: none; box-shadow: none;vertical-align:middle"/> for the discrete curves:  <img src="http://latex.codecogs.com/gif.latex?E_1(f)=\sum \phi_i^2/L_i" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p> Another important notation is a gradient with respect to the vertex p denoted by   <img src="http://latex.codecogs.com/gif.latex?\nabla_{p}" style="border: none; box-shadow: none;vertical-align:middle"/> - consider a triangle with a fixed basement  <img src="http://latex.codecogs.com/gif.latex?u" style="border: none; box-shadow: none;vertical-align:middle"/> and a vertex  <img src="http://latex.codecogs.com/gif.latex?p" style="border: none; box-shadow: none;vertical-align:middle"/> opposite to the basement. Without goint into details the gradient will be written as follows:</p>
+
+<p><img src="http://latex.codecogs.com/gif.latex?\nabla_{\gamma_{i-1}} E_i &=& \frac{\varphi_i}{L_i L_{i-1}} \left( \frac{v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} \hat{u} \right)\\
+\nabla_{\gamma_{i+1}} E_i &=& \frac{\varphi_i}{L_i^2} \left( \frac{u_{\perp v}-v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} (\hat{v}-\hat{u}) \right)\\
+\nabla_{\gamma_i} E_i &=& -\frac{\varphi_i}{L_i L_{i+1}} \left( \frac{u_{\perp v}}{A_i} + \frac{\varphi_i}{2L_i} \hat{v} \right)\\
+" style="border: none; box-shadow: none;vertical-align:middle"/></p>
+
+<p>A scheme of the proof might be found on the DDG course page. In order to implement the flow, one shall implement these formulas. In my case these formulas didn&#8217;t work as is, I added condition that if the angle is 0, than the gradient is 0, I also use absolute value of the angle. Finally, I suspect that there is a mistake somewhere in the gradient for the previous and the next vertices. However, the goal of having this method here is demonstrating how cumbersome it is and also to demonstrate that theis flow is much slower than the flow in curvature space. So since these formulas work for the square and bunny, it is enough.</p>
+
+<p>At the end I would like to mention that the exterior angle should be in range <img src="http://latex.codecogs.com/gif.latex?\[-\pi, \pi\]" style="border: none; box-shadow: none;vertical-align:middle"/>.
+It might be computed like that: <code>atan2(u.x * v.y - v.x * u.y, dot(u, v))</code>. Curvature for this point is then just <img src="http://latex.codecogs.com/gif.latex?\kappa_i = \phi_i / L_i" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<h2>Length-preserving flow</h2>
+
+<p>If we consider an energy <img src="http://latex.codecogs.com/gif.latex?E_2" style="border: none; box-shadow: none;vertical-align:middle"/> instead of <img src="http://latex.codecogs.com/gif.latex?E_1" style="border: none; box-shadow: none;vertical-align:middle"/> then the resulting flow is much simpler and works for bigger timesteps.</p>
+
+<p>First give a continuum formulation. The gradient with respect to <img src="http://latex.codecogs.com/gif.latex?L^2" style="border: none; box-shadow: none;vertical-align:middle"/> inner product is <img src="http://latex.codecogs.com/gif.latex?\nabla E(k) = -2k" style="border: none; box-shadow: none;vertical-align:middle"/>,
+thus the gradient flow is <img src="http://latex.codecogs.com/gif.latex?\dot{k} = -2k" style="border: none; box-shadow: none;vertical-align:middle"/>. After modifying the curvature we can restore the angle <img src="http://latex.codecogs.com/gif.latex?\theta" style="border: none; box-shadow: none;vertical-align:middle"/> by integrating the curvature <img src="http://latex.codecogs.com/gif.latex?\theta(s) = \theta_0 + \int_0^s d\theta = \theta_0 + \int_0^s \kappa\ ds" style="border: none; box-shadow: none;vertical-align:middle"/>. Having <img src="http://latex.codecogs.com/gif.latex?\theta" style="border: none; box-shadow: none;vertical-align:middle"/> we can calculate tangent vector and from that we can restore immersion <img src="http://latex.codecogs.com/gif.latex?f(s) = f_0 + \int_I T(s)\ ds" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p>The discretization is the following:</p>
+
+<p><img src="http://latex.codecogs.com/gif.latex?\kappa^{t} = \kappa^{t-1} + \tau \nabla E(\kappa^{t-1})\\
+L_i = \frac{1}{2}( |\gamma_{i+1}-\gamma_i| + |\gamma_i-\gamma_{i-1}| )\\
+\phi^{i}=L_{i}\kappa^{t}_i\\
+\theta_i = \sum_{k=0}^i \varphi_k\\
+T_i = (\cos\theta_i,\sin\theta_i)\\
+\gamma_i = \sum_{k=0}^i L_k T_k
+" style="border: none; box-shadow: none;vertical-align:middle"/></p>
+
+<p>In addition, we must take into account that the curve is closed, e.g. <img src="http://latex.codecogs.com/gif.latex?f(0) = f(L)" style="border: none; box-shadow: none;vertical-align:middle"/> and <img src="http://latex.codecogs.com/gif.latex?T(0) = T(L)" style="border: none; box-shadow: none;vertical-align:middle"/>. Without providing a proof - it is equavalent to having the following conditions: <img src="http://latex.codecogs.com/gif.latex?\langle \dot{\kappa}, 1 \rangle = \langle \dot{\kappa}, \gamma_x \rangle = \langle \dot{\kappa}, \gamma_y \rangle = 0" style="border: none; box-shadow: none;vertical-align:middle"/>. For the descrete case, one need to work in a space <img src="http://latex.codecogs.com/gif.latex?R^n" style="border: none; box-shadow: none;vertical-align:middle"/> where n is the number of points on the curve
+but with the inner product immersed by the function itself. It means that we need to create a diagonal mass matrix B where element on the diagonal are just <img src="http://latex.codecogs.com/gif.latex?L_i" style="border: none; box-shadow: none;vertical-align:middle"/> and when computing inner product use it
+<img src="http://latex.codecogs.com/gif.latex?\langle u, v \rangle = \mathsf{u^T B v}" style="border: none; box-shadow: none;vertical-align:middle"/>. The vectors we should orthogonalize are <img src="http://latex.codecogs.com/gif.latex?{1, f^x, f^y, \dot{\kappa}}" style="border: none; box-shadow: none;vertical-align:middle"/> where <img src="http://latex.codecogs.com/gif.latex?f^x" style="border: none; box-shadow: none;vertical-align:middle"/> anf <img src="http://latex.codecogs.com/gif.latex?f^y" style="border: none; box-shadow: none;vertical-align:middle"/> are x and y components of positions. At the end, <img src="http://latex.codecogs.com/gif.latex?\dot{\kappa}" style="border: none; box-shadow: none;vertical-align:middle"/> should be orthogonal to all other vectors.</p>
+
+<p>The algorithm overview is presented below.</p>
+
+<ol>
+<li>Evaluate curvature <img src="http://latex.codecogs.com/gif.latex?k \leftarrow \frac{1}{2}\langleN, \Delta f\rangle" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Pick a desired flow direction <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow -\nabla E_2(k)" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Build a constraint basis <img src="http://latex.codecogs.com/gif.latex?Orthogonalize \{1, f^x, f^y\} " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Project flow onto constraints <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow \dot{k} - \sum \ll\dot{k}, c_i \gg c_i " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Take an explicit Euler step <img src="http://latex.codecogs.com/gif.latex?k \leftarrow k + \tau \dot{k}" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Recover tangents <img src="http://latex.codecogs.com/gif.latex? T \leftarrow Integrate(k) " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Recover positions <img src="http://latex.codecogs.com/gif.latex? f \leftarrow Integrate(T) " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+</ol>
+
+
+<p>Note that the resulting flow is isometric by construction - we do that at two last steps.</p>
+
+<h2>Simulation results and comparison</h2>
+
+<p>The simulation results tell us that in case of the standard approach the biggest stable time step is <img src="http://latex.codecogs.com/gif.latex?\tau <= 10^{-9}" style="border: none; box-shadow: none;vertical-align:middle"/> while for Curvature flow in curvature space we have  <img src="http://latex.codecogs.com/gif.latex?\tau < 1" style="border: none; box-shadow: none;vertical-align:middle"/>.
+So it is up to <img src="http://latex.codecogs.com/gif.latex?10^{9}" style="border: none; box-shadow: none;vertical-align:middle"/> times bigger! Not suprisingly you will wait forever to obtain the flow using standard approach (several minutes) while Crane&#8217;s et al. approach propagates the curve in a second or so.
+Also Crane&#8217;s et al. approach gives isometric flow, while standard doesn&#8217;t. It might be seen on the figure below - point are distributed uniformly in the first case, and not uniformly in other:</p>
+
+<p> <img src="../../../../../images/curv-flow/crane-vs-standard.png" style="vertical-align:middle; background:white"/></p>
+
+<p>Finally, some more picture for the Isometric curvature flow:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/star1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/star2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/star3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/star4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/square1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/square2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>And one more for the standard one:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/square-w1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T09:39:00+01:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/06/06/seam-carving-algorithm/" title="Previous Post: Seam carving algorithm">&laquo; Seam carving algorithm</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB build on MacOS</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
