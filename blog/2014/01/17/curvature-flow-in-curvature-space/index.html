@@ -89,29 +89,7 @@
   </header>
 
 
-<div class="entry-content"><table>
-<thead>
-<tr>
-<th></th>
-<th> </th>
-<th align="center"> </th>
-<th align="center"> </th>
-<th align="center"> </th>
-<th align="center"> </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td></td>
-<td><img src="/images/curv-flow/bunny1.png" style="scale: 0.1"></td>
-<td align="center"> <img src="/images/curv-flow/bunny2.png" alt="alt text" /> </td>
-<td align="center"> <img src="../../../../../images/curv-flow/bunny3.png" alt="alt text" /> </td>
-<td align="center"> <img src="../../../../../images/curv-flow/bunny4.png" alt="alt text" /> </td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
+<div class="entry-content"><p><img src="/images/curv-flow/bunny.png" alt="alt text" /></p>
 
 <p>Recently I came across an amazing paper <a href="http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf">&#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al.</a> at SIGGRAH 2013 and decided to reproduce the results.
 The basic idea of the approach is in usage of the principal curvatures instead of vertex coordinate itself for the solution of PDE. Roughly speaking, at each iteration for every vertex the curvature is computed, than modified according to the chosen PDE, and, finally, a new position is restored out of the curvature. So for instance, you want to edit your surface or curve using Willmore flow, traditionally it is
