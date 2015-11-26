@@ -43,16 +43,17 @@ In their work Crane et al. created an implementation for both 1D and 2D manifold
  Willmore flow  <img src="http://latex.codecogs.com/gif.latex?E_2(k)=\int\limits_0^L  k^2 \mathrm{d}s" style="border: none; box-shadow: none;vertical-align:middle"/>. The difference between them is in the second case it is a function of the curvature  <img src="http://latex.codecogs.com/gif.latex?k" style="border: none; box-shadow: none;vertical-align:middle"/> rather than immersion f. It allows to solve simpler PDE, having a better convergence and also restore positions in a way that preserves desired properties.
 
 ##Standard Willmore flow
-First consider the solution using standard approach. Let introduce notation which will be used further:  <img src="http://latex.codecogs.com/gif.latex?T=(cos(\theta), sin(\theta)" style="border: none; box-shadow: none;vertical-align:middle"/> is a tangent vector,  <img src="http://latex.codecogs.com/gif.latex?k=\frac{\mathrm d}{\mathrm d s} \left( \theta(s) \right)" style="border: none; box-shadow: none;vertical-align:middle"/> is curvature, 
+First consider the solution using standard approach. Let introduce notation which will be used further:  <img src="http://latex.codecogs.com/gif.latex?T=(cos(\theta), sin(\theta))" style="border: none; box-shadow: none;vertical-align:middle"/> is a tangent vector,  <img src="http://latex.codecogs.com/gif.latex?k=\frac{\mathrm d}{\mathrm d s} \left( \theta(s) \right)" style="border: none; box-shadow: none;vertical-align:middle"/> is curvature, 
  <img src="http://latex.codecogs.com/gif.latex?\ast" style="border: none; box-shadow: none;vertical-align:middle"/> denote Hodge star,  <img src="http://latex.codecogs.com/gif.latex?e^*" style="border: none; box-shadow: none;vertical-align:middle"/> means a dual edge,  <img src="http://latex.codecogs.com/gif.latex?\phi" style="border: none; box-shadow: none;vertical-align:middle"/> is an exterior angle for the dual edge, Hodge star on primal 0-form is given by 
  <img src="http://latex.codecogs.com/gif.latex?(\ast_0)_{ii}=L_i=0.5(|f_{i+1} - f_i|+|f_i - f_{i-1}|)" style="border: none; box-shadow: none;vertical-align:middle"/>. We will use the fact that <img src="http://latex.codecogs.com/gif.latex?k=\ast \phi" style="border: none; box-shadow: none;vertical-align:middle"/> to define  <img src="http://latex.codecogs.com/gif.latex?E_1" style="border: none; box-shadow: none;vertical-align:middle"/> for the discrete curves:  <img src="http://latex.codecogs.com/gif.latex?E_1(f)=\sum \phi_i^2/L_i" style="border: none; box-shadow: none;vertical-align:middle"/>.
 
 
  Another important notation is a gradient with respect to the vertex p denoted by   <img src="http://latex.codecogs.com/gif.latex?\nabla_{p}" style="border: none; box-shadow: none;vertical-align:middle"/> - consider a triangle with a fixed basement  <img src="http://latex.codecogs.com/gif.latex?u" style="border: none; box-shadow: none;vertical-align:middle"/> and a vertex  <img src="http://latex.codecogs.com/gif.latex?p" style="border: none; box-shadow: none;vertical-align:middle"/> opposite to the basement. Without goint into details the gradient will be written as follows:
 
-<img src="http://latex.codecogs.com/gif.latex?\nabla_{\gamma_{i-1}} E_i &=& \frac{\varphi_i}{L_i L_{i-1}} \left( \frac{v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} \hat{u} \right)\\ 
-\nabla_{\gamma_{i+1}} E_i &=& \frac{\varphi_i}{L_i^2} \left( \frac{u_{\perp v}-v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} (\hat{v}-\hat{u}) \right)\\ 
-\nabla_{\gamma_i} E_i &=& -\frac{\varphi_i}{L_i L_{i+1}} \left( \frac{u_{\perp v}}{A_i} + \frac{\varphi_i}{2L_i} \hat{v} \right)\\
+ 
+<img src="http://latex.codecogs.com/gif.latex?\nabla_{\gamma_{i-1}} E_i = \frac{\varphi_i}{L_i L_{i-1}} \left( \frac{v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} \hat{u} \right)\\ 
+\nabla_{\gamma_{i+1}} E_i = \frac{\varphi_i}{L_i^2} \left( \frac{u_{\perp v}-v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} (\hat{v}-\hat{u}) \right)\\ 
+\nabla_{\gamma_i} E_i = -\frac{\varphi_i}{L_i L_{i+1}} \left( \frac{u_{\perp v}}{A_i} + \frac{\varphi_i}{2L_i} \hat{v} \right)\\
 " style="border: none; box-shadow: none;vertical-align:middle"/>
 
 
@@ -84,7 +85,7 @@ but with the inner product immersed by the function itself. It means that we nee
 
 The algorithm overview is presented below.
 
-1. Evaluate curvature <img src="http://latex.codecogs.com/gif.latex?k \leftarrow \frac{1}{2}\langleN, \Delta f\rangle" style="border: none; box-shadow: none;vertical-align:middle"/>
+1. Evaluate curvature <img src="http://latex.codecogs.com/gif.latex?k \leftarrow \frac{1}{2}\langle N, \Delta f\rangle" style="border: none; box-shadow: none;vertical-align:middle"/>
 2. Pick a desired flow direction <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow -\nabla E_2(k)" style="border: none; box-shadow: none;vertical-align:middle"/>
 3. Build a constraint basis <img src="http://latex.codecogs.com/gif.latex?Orthogonalize \{1, f^x, f^y\} " style="border: none; box-shadow: none;vertical-align:middle"/>
 4. Project flow onto constraints <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow \dot{k} - \sum \ll\dot{k}, c_i \gg c_i " style="border: none; box-shadow: none;vertical-align:middle"/>
