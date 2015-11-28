@@ -199,9 +199,12 @@ I describe how to use this approach in LAMMPS.</p>
 </center>
 
 
-<p>(4) From analytical solution for the problem, it is known that v(x)=alpha*(x*D - x*x). Where alpha=p*g/(2*n), p - is numeric density(3.0 in our case,
+<p>(4) From analytical solution for the problem, it is known that <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha (D x - x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Where <img src="http://latex.codecogs.com/gif.latex?\alpha=pg/(2n)" style="border: none; box-shadow: none;vertical-align:middle"/>, p - is numeric density(3.0 in our case,
 determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
-In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha<em>(x</em>14 + x*x). Then type</p>
+In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas.
+I pick the left one, so the analytical solution look like <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha*(14x + x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Then type</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -211,7 +214,8 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
 </span><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4, f(x)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:</p>
+<p>The result should be <img src="http://latex.codecogs.com/gif.latex?\alpha=0.0278" style="border: none; box-shadow: none;vertical-align:middle"/>, thus viscosity n=2.68 in DPD units.
+The plot with velocities from simulation and  with the fitting plot should look like that:</p>
 
 <center>
 <img src="../../../../../images/velprofile2.png" width="400">
