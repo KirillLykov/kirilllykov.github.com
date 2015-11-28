@@ -34,7 +34,10 @@ neigh_modify    delay 0 every 4 check no
 
 #******************DPD******************
 #to store velocities by ghost atoms
-communicate single vel yes
+#communicate single vel yes - for old versions of lammps
+comm_style brick
+comm_modify vel yes
+
 # T cutoff seed
 pair_style  dpd 0.1 1.0 34387
 # atom_type atom_type a gamma=sigma^2/2 cutoff(optional)
