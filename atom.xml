@@ -4,7 +4,7 @@
   <title><![CDATA[K. Lykov Blog]]></title>
   <link href="http://KirillLykov.github.com/atom.xml" rel="self"/>
   <link href="http://KirillLykov.github.com/"/>
-  <updated>2015-11-26T10:55:45+01:00</updated>
+  <updated>2015-11-28T12:35:15+01:00</updated>
   <id>http://KirillLykov.github.com/</id>
   <author>
     <name><![CDATA[Kirill Lykov]]></name>
@@ -1349,6 +1349,9 @@ I describe how to use this approach in LAMMPS.</p>
 <span class='line-number'>37</span>
 <span class='line-number'>38</span>
 <span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>boundary p p p
 </span><span class='line'>
 </span><span class='line'>units     lj
@@ -1372,7 +1375,10 @@ I describe how to use this approach in LAMMPS.</p>
 </span><span class='line'>
 </span><span class='line'>#******************DPD******************
 </span><span class='line'>#to store velocities by ghost atoms
-</span><span class='line'>communicate single vel yes
+</span><span class='line'>#communicate single vel yes - for old versions of lammps
+</span><span class='line'>comm_style brick
+</span><span class='line'>comm_modify vel yes
+</span><span class='line'>
 </span><span class='line'># T cutoff seed
 </span><span class='line'>pair_style  dpd 0.1 1.0 34387
 </span><span class='line'># atom_type atom_type a gamma=sigma^2/2 cutoff(optional)
