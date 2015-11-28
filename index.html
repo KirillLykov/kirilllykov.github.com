@@ -9,7 +9,8 @@
   <meta name="author" content="Kirill Lykov">
 
   
-  <meta name="description" content="Recently I came across an amazing paper &#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al. at SIGGRAH 2013 and decided to &hellip;">
+  <meta name="description" content="Recently we developed software package called uDeviceX for blood cells flow modeling.
+This software allows performing computationally efficient &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +64,61 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating Tumor Cells in Microfluidics</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-11-28T18:30:00+01:00" pubdate data-updated="true">Nov 28<span>th</span>, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Recently we developed software package called <a href="https://github.com/uDeviceX/uDeviceX">uDeviceX</a> for blood cells flow modeling.
+This software allows performing computationally efficient simulations of flow of deformable blood cells in channel geometry of arbitrary complexity.
+The code is written on CUDA/C++ and is targeting GPU-enabled supercomputers such as Titan at ORNL or Piz Daint at CSCS.</p>
+
+<p>We used Dissipative Particle Dynamics for the fluid modeling and fluid-structure interactions.
+The solid walls were modeled using Signed Distance Function.
+We employed validated red blood cell  membrane model which takes into account both elastic and viscous terms.</p>
+
+<p>Although uDeviceX is not the first package where mentioned models were used, it is the most computationally efficient software and the first available online.
+Our work is among the finalist of the Gordon Bell Award 2015.
+In particular, we demonstrated perfect weak scalability on the whole Titan (18,688 KX20 GPU nodes) and good strong scalability on Piz Daint.
+Details about software, test cases, and performance results are published in <a href="http://dl.acm.org/citation.cfm?id=2807677">ACM SC&#8217;15 Proceedings</a>.</p>
+
+<p>A recently published video of some simulations in microfluidics using our software:</p>
+
+<iframe  src="https://www.youtube.com/embed/1cYMCbct4Ow"></iframe>
+
+
+<p>The authors order corresponds to the contribution to the visualization.
+<a href="https://www.mitsuba-renderer.org/">Mitsuba</a>  was used for rendering.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -493,53 +549,9 @@ I describe how to use this approach in LAMMPS.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/10/12/initial-post/">Java Modeling Language</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-10-12T16:40:00+02:00" pubdate data-updated="true">Oct 12<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java Modeling Language is a Design by Contract(DBC) specification language for Java programs. DBC is a programming methodology,
-which was introduced by B. Meyer and implemented in Eiffel programming language. The idea is pretty simple – a program component must do exactly
-what is described in the contract. Hence, a user of the component may learn about it using the contract, the implementation of the component
-might be different by must follow the contract. In Object Oriented languages a component is a class and a contract regulates the state of an object as well as behavior.
-Using JML a programmer may specify the contract for methods and attributes. It is written as a comment in the class and
-translated by the JML compiler into the Java code.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/10/12/initial-post/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/2/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -550,6 +562,10 @@ translated by the JML compiler into the Java code.</p>
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating tumor cells in microfluidics</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
@@ -565,10 +581,6 @@ translated by the JML compiler into the Java code.</p>
     
       <li class="post">
         <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB build on MacOS</a>
       </li>
     
   </ul>

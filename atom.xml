@@ -4,7 +4,7 @@
   <title><![CDATA[K. Lykov Blog]]></title>
   <link href="http://KirillLykov.github.com/atom.xml" rel="self"/>
   <link href="http://KirillLykov.github.com/"/>
-  <updated>2015-11-28T14:16:41+01:00</updated>
+  <updated>2015-11-28T19:07:27+01:00</updated>
   <id>http://KirillLykov.github.com/</id>
   <author>
     <name><![CDATA[Kirill Lykov]]></name>
@@ -12,6 +12,34 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Circulating tumor cells in microfluidics]]></title>
+    <link href="http://KirillLykov.github.com/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/"/>
+    <updated>2015-11-28T18:30:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2015/11/28/circulating-tumor-cells-in-microfluidics</id>
+    <content type="html"><![CDATA[<p>Recently we developed software package called <a href="https://github.com/uDeviceX/uDeviceX">uDeviceX</a> for blood cells flow modeling.
+This software allows performing computationally efficient simulations of flow of deformable blood cells in channel geometry of arbitrary complexity.
+The code is written on CUDA/C++ and is targeting GPU-enabled supercomputers such as Titan at ORNL or Piz Daint at CSCS.</p>
+
+<p>We used Dissipative Particle Dynamics for the fluid modeling and fluid-structure interactions.
+The solid walls were modeled using Signed Distance Function.
+We employed validated red blood cell  membrane model which takes into account both elastic and viscous terms.</p>
+
+<p>Although uDeviceX is not the first package where mentioned models were used, it is the most computationally efficient software and the first available online.
+Our work is among the finalist of the Gordon Bell Award 2015.
+In particular, we demonstrated perfect weak scalability on the whole Titan (18,688 KX20 GPU nodes) and good strong scalability on Piz Daint.
+Details about software, test cases, and performance results are published in <a href="http://dl.acm.org/citation.cfm?id=2807677">ACM SC&#8217;15 Proceedings</a>.</p>
+
+<p>A recently published video of some simulations in microfluidics using our software:</p>
+
+<iframe  src="https://www.youtube.com/embed/1cYMCbct4Ow"></iframe>
+
+
+<p>The authors order corresponds to the contribution to the visualization.
+<a href="https://www.mitsuba-renderer.org/">Mitsuba</a>  was used for rendering.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Curvature flow in curvature space]]></title>
