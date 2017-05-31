@@ -137,6 +137,9 @@ I describe how to use this approach in LAMMPS.</p>
 <span class='line-number'>37</span>
 <span class='line-number'>38</span>
 <span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>boundary p p p
 </span><span class='line'>
 </span><span class='line'>units     lj
@@ -160,7 +163,10 @@ I describe how to use this approach in LAMMPS.</p>
 </span><span class='line'>
 </span><span class='line'>#******************DPD******************
 </span><span class='line'>#to store velocities by ghost atoms
-</span><span class='line'>communicate single vel yes
+</span><span class='line'>#communicate single vel yes - for old versions of lammps
+</span><span class='line'>comm_style brick
+</span><span class='line'>comm_modify vel yes
+</span><span class='line'>
 </span><span class='line'># T cutoff seed
 </span><span class='line'>pair_style  dpd 0.1 1.0 34387
 </span><span class='line'># atom_type atom_type a gamma=sigma^2/2 cutoff(optional)
@@ -186,12 +192,19 @@ I describe how to use this approach in LAMMPS.</p>
 </pre></td><td class='code'><pre><code class=''><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be something like:
-<img src="../../../../../images/velprofile1.png" width="400"></p>
+<p>The result should be something like:</p>
 
-<p>(4) From analytical solution for the problem, it is known that v(x)=alpha*(x*D - x*x). Where alpha=p*g/(2*n), p - is numeric density(3.0 in our case,
+<center>
+<img src="../../../../../images/velprofile1.png" width="400">
+</center>
+
+
+<p>(4) From analytical solution for the problem, it is known that <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha (D x - x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Where <img src="http://latex.codecogs.com/gif.latex?\alpha=pg/(2n)" style="border: none; box-shadow: none;vertical-align:middle"/>, p - is numeric density(3.0 in our case,
 determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
-In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha<em>(x</em>14 + x*x). Then type</p>
+In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas.
+I pick the left one, so the analytical solution look like <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha*(14x + x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Then type</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -201,8 +214,13 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
 </span><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4, f(x)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:
-<img src="../../../../../images/velprofile2.png" width="400"></p>
+<p>The result should be <img src="http://latex.codecogs.com/gif.latex?\alpha=0.0278" style="border: none; box-shadow: none;vertical-align:middle"/>, thus viscosity n=2.68 in DPD units.
+The plot with velocities from simulation and  with the fitting plot should look like that:</p>
+
+<center>
+<img src="../../../../../images/velprofile2.png" width="400">
+</center>
+
 </div>
 
 
@@ -245,6 +263,8 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
         <a class="basic-alignment left" href="/blog/2012/10/13/writing-fixes-for-lammps/" title="Previous Post: How to write fix for LAMMPS">&laquo; How to write fix for LAMMPS</a>
       
       
+        <a class="basic-alignment right" href="/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/" title="Next Post: Tips about building and profiling with Cray perftoolkit">Tips about building and profiling with Cray perftoolkit &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -258,15 +278,23 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/">LAMMPS: How to compute fluid viscosity</a>
+        <a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating tumor cells in microfluidics</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/10/13/writing-fixes-for-lammps/">How to write fix for LAMMPS</a>
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/10/12/initial-post/">Java Modeling Language</a>
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
       </li>
     
   </ul>
@@ -322,7 +350,7 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - Kirill Lykov -
+  Copyright &copy; 2016 - Kirill Lykov -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

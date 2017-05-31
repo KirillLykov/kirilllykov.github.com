@@ -9,8 +9,8 @@
   <meta name="author" content="Kirill Lykov">
 
   
-  <meta name="description" content="The theory is described in “Poiseuille flow to measure the viscosity of particle model fluids” by J. A. Backer et al. Below
-I describe how to use &hellip;">
+  <meta name="description" content="Recently we developed software package called uDeviceX for blood cells flow modeling.
+This software allows performing computationally efficient &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,403 @@ I describe how to use &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating Tumor Cells in Microfluidics</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-11-28T18:30:00+01:00" pubdate data-updated="true">Nov 28<span>th</span>, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Recently we developed software package called <a href="https://github.com/uDeviceX/uDeviceX">uDeviceX</a> for blood cells flow modeling.
+This software allows performing computationally efficient simulations of flow of deformable blood cells in channel geometry of arbitrary complexity.
+The code is written on CUDA/C++ and is targeting GPU-enabled supercomputers such as Titan at ORNL or Piz Daint at CSCS.</p>
+
+<p>We used Dissipative Particle Dynamics for the fluid modeling and fluid-structure interactions.
+The solid walls were modeled using Signed Distance Function.
+We employed validated red blood cell  membrane model which takes into account both elastic and viscous terms.</p>
+
+<p>Although uDeviceX is not the first package where mentioned models were used, it is the most computationally efficient software and the first available online.
+Our work is among the finalist of the Gordon Bell Award 2015.
+In particular, we demonstrated perfect weak scalability on the whole Titan (18,688 KX20 GPU nodes) and good strong scalability on Piz Daint.
+Details about software, test cases, and performance results are published in <a href="http://dl.acm.org/citation.cfm?id=2807677">ACM SC&#8217;15 Proceedings</a>.</p>
+
+<p>A recently published video of some simulations in microfluidics using our software:</p>
+
+<iframe  src="https://www.youtube.com/embed/1cYMCbct4Ow"></iframe>
+
+
+<p>The authors order corresponds to the contribution to the visualization.
+<a href="https://www.mitsuba-renderer.org/">Mitsuba</a>  was used for rendering.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature Flow in Curvature Space</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T09:39:00+01:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/curv-flow/bunny.png" alt="alt text" /></p>
+
+<p>Recently I came across an amazing paper <a href="http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf">&#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al.</a> at SIGGRAH 2013 and decided to reproduce the results.
+The basic idea of the approach is in usage of the principal curvatures instead of vertex coordinate itself for the solution of PDE. Roughly speaking, at each iteration for every vertex the curvature is computed, than modified according to the chosen PDE, and, finally, a new position is restored out of the curvature. So for instance, you want to edit your surface or curve using Willmore flow, traditionally it is
+evaluated in terms of positions of  vertecies themself, it involves spatial dirivatives, Laplace-Beltrami operator depending on positions. Thus the implementation is complicated and the numerical scheme requires small time steps to converge. By constrast, reformulataion of the problem in terms of curvature gives a very simple numerical scheme, which works with much bigger time steps (in current work 10<sup>8</sup> times bigger). In addition to that, this reformulation allows to
+preserve desired properties of the manifold (e.g. length, angle).</p>
+
+<p>Crane et. al. created a general framework and applied it to 1D manifolds (curves) and 2D manifolds (surfaces). I reproduced results only for the 1D case, since 2D is much more time consuming - working with group of quaternions, half-densities, and dirac operator - is too much for a hobby project.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/06/06/seam-carving-algorithm/">Seam Carving Algorithm</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-06T22:41:00+02:00" pubdate data-updated="true">Jun 6<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>Intro</h2>
+
+<p>Seam carving is an algorithm for content-aware image resizing, it was described in the paper by <a href="http://www.win.tue.nl/~wstahw/2IV05/seamcarving.pdf">S. Avidan &amp; A. Shamir</a>. In contract to stretching, content-aware resizing
+allows to remove/add pixels which has less meaning while saving more important. Pictures below demonstrate this - original picture of the size 332x480 is on the top, the picture after applying seam carving (size is 272x400) is on the bottom</p>
+
+<center>
+<img src="../../../../../images/seamcarving/sea-thai.jpg">
+<img src="../../../../../images/seamcarving/sea-thai-reduced.jpg">
+</center>
+
+
+<p>This algorithm is quite impressive so one may find a lot of articles describing it. Yet as I found most of the authors haven&#8217;t read the original paper and provide a very basic implementation. In this post I will describe the algorithm with all details as it was written by Avidan &amp; Shamir. Yet I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/06/06/seam-carving-algorithm/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level Sets With OpenVDB. Quick Introduction. Part 1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-02T22:00:00+02:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>Intro</h2>
+
+<p>From the high-level of view <a href="http://en.wikipedia.org/wiki/Level_set">level-set method</a> (further just level set) can be considered as geometry representation, in addition to polygonal meshes and NURBS. This geometry representation simplifies solution of some problems in Computational Geometry, physical based modeling in Computer Graphics. Although level sets were first used for geometry tracking in 80s by Osher and Sethian, the main development of this method took place in the end of 90s and during 2000s.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/04/02/level-set-openvdb-intro-1/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) Files Into Avi - Oni2avi</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-19T23:27:00+01:00" pubdate data-updated="true">Mar 19<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>OpenNI is a library for work with Kinect camera. I prefer to use it instead of .net libraries from Microsoft because OpenNI is more open
+and, I think, it is a more natural to use it on on unix systems.
+OpenNI saves video and depth map obtained from Kinect camera into it&#8217;s own data format oni. Sometimes it is desirable to have avi files instead because there are
+a lot of code made for this format. So I wrote a simple command line converter from oni to avi data format available <a href="https://github.com/KirillLykov/oni2avi">oni2avi</a>.
+I developed it because one friend of mine who is using Matlab asked me to help him in converting oni file to avi. There is a plugin to Matlab which allows
+to read oni files directly but for whatever reason he could not use it. Hope, this code will be usefull for someone else.
+Oni2Avi needs OpenNI, OpenCV and boost. Please, read README file. In addition, you must to use a modern C++ compiler. If you use gcc, it must be 4.6 or newer.
+In case if you use Mac OS and macport, do the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo port install openni
+</span><span class='line'>sudo port install opencv
+</span><span class='line'>sudo port install boost
+</span><span class='line'>git clone git://github.com/KirillLykov/oni2avi.git
+</span><span class='line'>cd oni2avi
+</span><span class='line'>make
+</span><span class='line'>./oni2avi &lt;your-file-name&gt;.oni &lt;your-file-name&gt;.avi --codec=FLV1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you need any support, please write to <a href="https://github.com/KirillLykov/oni2avi/issues">issues</a>, click button &#8220;New Issue&#8221; and then add a proper label - bug or question.
+An alternative option is to write to my email (address is written in the About section of this blog).</p>
+
+<p><strong>UPD</strong>: Since I shared this tool, I&#8217;ve got many letters with questions. Primarily from students who are doing something with Kinect. The most questions are about building oni2avi, so below are some recomendations:</p>
+
+<ul>
+<li>pathes for libraries and includes in the Makefile are set to the default location for the case you are using MacOS+Macport or Ubuntu+standartPackageInstaller.
+Thus if you have libs or includes in a different place, you need to specify where they are in the Makefile</li>
+<li>if you see a compilation error, please check that all pathes are correc. If you are on Ubuntu, also check whether you need -dev packages to have includes. Finally, check the version of libraries you are using. I suppose that OpenCV version >= 2.3, boost version >= 1.48, OpenNI version >= 1.53</li>
+<li>if you&#8217;ve found a bug, specify a version of libraries you use, command line options for the tool, and input/output files you&#8217;ve got.</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB Build on MacOS</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-04T18:54:00+01:00" pubdate data-updated="true">Feb 4<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grid.
+For instance, it can be used to work with <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
+on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7.5), with gcc 4.7.2 and openvdb-v0-103-1.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/02/04/openvdb-installation-on-macos/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/">Lammps Data Formats Into TecPlot ASCI Data Format</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-20T09:48:00+01:00" pubdate data-updated="true">Dec 20<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the TecPlot data formats is a simple ASCI format. It is deprecated but can be opened in both TecPlot and Paraview.
+This data format has variations so further I will use it for atoms and velocity profiles visualizations.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/">Tips About Building and Profiling With Cray Perftoolkit</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-19T16:25:00+01:00" pubdate data-updated="true">Dec 19<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Cray compiler generates <a href="http://www.nersc.gov/users/computational-systems/hopper/performance-and-optimization/compiler-comparisons/">one of the fastest code.</a> On Cray XE6 lammps compiled by Cray Compiler(8.1.2, -O2) outperform gcc code (4.7, -Ofast) in 1.6 times. If you use Cray compiler, it has sense to use Cray&#8217;s perftoolkit for finding bottlenecks in your MPI/OpenMP application.
+This post is about tips about using these tools because I always forget details. I will build and analyze LAMMPS.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -152,53 +549,9 @@ I describe how to use this approach in LAMMPS.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/10/12/initial-post/">Java Modeling Language</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-10-12T16:40:00+02:00" pubdate data-updated="true">Oct 12<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java Modeling Language is a Design by Contract(DBC) specification language for Java programs. DBC is a programming methodology,
-which was introduced by B. Meyer and implemented in Eiffel programming language. The idea is pretty simple – a program component must do exactly
-what is described in the contract. Hence, a user of the component may learn about it using the contract, the implementation of the component
-might be different by must follow the contract. In Object Oriented languages a component is a class and a contract regulates the state of an object as well as behavior.
-Using JML a programmer may specify the contract for methods and attributes. It is written as a comment in the class and
-translated by the JML compiler into the Java code.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/10/12/initial-post/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/2/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -211,15 +564,23 @@ translated by the JML compiler into the Java code.</p>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/">LAMMPS: How to compute fluid viscosity</a>
+        <a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating tumor cells in microfluidics</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/10/13/writing-fixes-for-lammps/">How to write fix for LAMMPS</a>
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/10/12/initial-post/">Java Modeling Language</a>
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
       </li>
     
   </ul>
@@ -274,7 +635,7 @@ translated by the JML compiler into the Java code.</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2012 - Kirill Lykov -
+  Copyright &copy; 2016 - Kirill Lykov -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

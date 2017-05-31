@@ -4,7 +4,7 @@
   <title><![CDATA[K. Lykov Blog]]></title>
   <link href="http://KirillLykov.github.com/atom.xml" rel="self"/>
   <link href="http://KirillLykov.github.com/"/>
-  <updated>2012-11-13T19:24:08+01:00</updated>
+  <updated>2016-10-05T15:46:07+02:00</updated>
   <id>http://KirillLykov.github.com/</id>
   <author>
     <name><![CDATA[Kirill Lykov]]></name>
@@ -12,6 +12,1318 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Circulating tumor cells in microfluidics]]></title>
+    <link href="http://KirillLykov.github.com/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/"/>
+    <updated>2015-11-28T18:30:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2015/11/28/circulating-tumor-cells-in-microfluidics</id>
+    <content type="html"><![CDATA[<p>Recently we developed software package called <a href="https://github.com/uDeviceX/uDeviceX">uDeviceX</a> for blood cells flow modeling.
+This software allows performing computationally efficient simulations of flow of deformable blood cells in channel geometry of arbitrary complexity.
+The code is written on CUDA/C++ and is targeting GPU-enabled supercomputers such as Titan at ORNL or Piz Daint at CSCS.</p>
+
+<p>We used Dissipative Particle Dynamics for the fluid modeling and fluid-structure interactions.
+The solid walls were modeled using Signed Distance Function.
+We employed validated red blood cell  membrane model which takes into account both elastic and viscous terms.</p>
+
+<p>Although uDeviceX is not the first package where mentioned models were used, it is the most computationally efficient software and the first available online.
+Our work is among the finalist of the Gordon Bell Award 2015.
+In particular, we demonstrated perfect weak scalability on the whole Titan (18,688 KX20 GPU nodes) and good strong scalability on Piz Daint.
+Details about software, test cases, and performance results are published in <a href="http://dl.acm.org/citation.cfm?id=2807677">ACM SC&#8217;15 Proceedings</a>.</p>
+
+<p>A recently published video of some simulations in microfluidics using our software:</p>
+
+<iframe  src="https://www.youtube.com/embed/1cYMCbct4Ow"></iframe>
+
+
+<p>The authors order corresponds to the contribution to the visualization.
+<a href="https://www.mitsuba-renderer.org/">Mitsuba</a>  was used for rendering.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Curvature flow in curvature space]]></title>
+    <link href="http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space/"/>
+    <updated>2014-01-17T09:39:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space</id>
+    <content type="html"><![CDATA[<p><img src="http://KirillLykov.github.com/images/curv-flow/bunny.png" alt="alt text" /></p>
+
+<p>Recently I came across an amazing paper <a href="http://www.cs.columbia.edu/~keenan/Projects/ConformalWillmoreFlow/paper.pdf">&#8220;Robust fairing via Conformal Curvate flow&#8221; by K. Crane et al.</a> at SIGGRAH 2013 and decided to reproduce the results.
+The basic idea of the approach is in usage of the principal curvatures instead of vertex coordinate itself for the solution of PDE. Roughly speaking, at each iteration for every vertex the curvature is computed, than modified according to the chosen PDE, and, finally, a new position is restored out of the curvature. So for instance, you want to edit your surface or curve using Willmore flow, traditionally it is
+evaluated in terms of positions of  vertecies themself, it involves spatial dirivatives, Laplace-Beltrami operator depending on positions. Thus the implementation is complicated and the numerical scheme requires small time steps to converge. By constrast, reformulataion of the problem in terms of curvature gives a very simple numerical scheme, which works with much bigger time steps (in current work 10<sup>8</sup> times bigger). In addition to that, this reformulation allows to
+preserve desired properties of the manifold (e.g. length, angle).</p>
+
+<p>Crane et. al. created a general framework and applied it to 1D manifolds (curves) and 2D manifolds (surfaces). I reproduced results only for the 1D case, since 2D is much more time consuming - working with group of quaternions, half-densities, and dirac operator - is too much for a hobby project.</p>
+
+<!--more-->
+
+
+<p>Fist of all, I would recommend to read materals for the course in <a href="http://brickisland.net/cs177fa12/?p=320">Discrete Differential Geometry</a> provided by K. Crane. There one might find a very detailed explanation of the length-preserving
+curvature flow in the curvature space, described in the paper. In addition to that, there are formulas for the standard Willmore flow for the curve and nice scatches. You also might find some details in Crane&#8217;s dissertation, but primarily if you want to implement a 3D case (there is a discretization of the Dirac operator, explanation of the exterior calculus on quaternions, many proofs used for the theorems used in the paper, etc). At the moment of the writing this post, authors of the paper didn&#8217;t shared their implementation for the isometric curvature flow, so I implemented it by myself (but sometimes asking K.Crane about some details, he was very helful).</p>
+
+<p>The text will be structures as follows. First, I will give basic definitions. Than I will describe the approach by Crane et al. and show some simulation results on the models provided by K. Crane. Finally, I will briefly describe a standard Willmore flow and show simulation result for comparison.</p>
+
+<h2>Definitions</h2>
+
+<p>Definition:  <img src="http://latex.codecogs.com/gif.latex?f:M \rightarrow \mathbb{R}^n" style="border: none; box-shadow: none;vertical-align:middle"/>, where M - (n-1)-manifold with boundary  <img src="http://latex.codecogs.com/gif.latex?\partial{M}" style="border: none; box-shadow: none;vertical-align:middle"/> is called  <em>immersion</em> if  <img src="http://latex.codecogs.com/gif.latex?D_pf:T_p M \rightarrow T_{f(p)} \mathbb{R}^n" style="border: none; box-shadow: none;vertical-align:middle"/> is injective map.</p>
+
+<p>Definition: let f be an immersion of a manifold M into Euclidean space, and suppose that E is a real-valued function of f. Then a <em>curvature flow</em> is the solution to the partial differential equation
+ <img src="http://latex.codecogs.com/gif.latex?\dot{f} = - \nabla{E(f)}" style="border: none; box-shadow: none;vertical-align:middle"/>. We call E <em>energy</em>.</p>
+
+<p>Common choices of energies are the <em>Dirichlet energy</em>  <img src="http://latex.codecogs.com/gif.latex?E_D(f) = \frac{1}{4} \int\limits_M |\nabla f|^2 \mathrm{d}A" style="border: none; box-shadow: none;vertical-align:middle"/> and the <em>Willmore energy</em>
+  <img src="http://latex.codecogs.com/gif.latex?E_w(f)=\int\limits_M H^2 \mathrm{d}A" style="border: none; box-shadow: none;vertical-align:middle"/>, where H is a mean curvature (for M without border). Further, we will work with Willmore energy. Further, Willmore energy is employed.</p>
+
+<p> It is easy to show that energies can be rewritten as  <img src="http://latex.codecogs.com/gif.latex?E_D=\ll\Delta f, f\gg" style="border: none; box-shadow: none;vertical-align:middle"/> and <img src="http://latex.codecogs.com/gif.latex?$E_W = \ll \Delta f, \Delta f \gg = \ll \Delta^2 f, f\gg" style="border: none; box-shadow: none;vertical-align:middle"/>, where  <img src="http://latex.codecogs.com/gif.latex?\ll,\gg" style="border: none; box-shadow: none;vertical-align:middle"/> denotes inner product in  <img src="http://latex.codecogs.com/gif.latex?L^2" style="border: none; box-shadow: none;vertical-align:middle"/>.
+ <img src="http://latex.codecogs.com/gif.latex?\Delta" style="border: none; box-shadow: none;vertical-align:middle"/> denotes Laplace-Beltrami operator, note that it itself depends on the immersion f. It leads to non-linearity of the corresponding flow equations formulated in terms of immersions.</p>
+
+<p>In their work Crane et al. created an implementation for both 1D and 2D manifold. I will consider Willmore flow only curves. Let describe the geometry of the curve via an immersion  <img src="http://latex.codecogs.com/gif.latex?f:I \rightarrow \mathbb{R}^2, s \rightarrow f(s)" style="border: none; box-shadow: none;vertical-align:middle"/> for interval  <img src="http://latex.codecogs.com/gif.latex?I= [0, L]" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p> We will work with two definitions of energies - one to get a Willmore flow using a standard approach  <img src="http://latex.codecogs.com/gif.latex?E_1(f)=\int\limits_0^L  k^2 \mathrm{d}s" style="border: none; box-shadow: none;vertical-align:middle"/>, another one is used for the conformal
+ Willmore flow  <img src="http://latex.codecogs.com/gif.latex?E_2(k)=\int\limits_0^L  k^2 \mathrm{d}s" style="border: none; box-shadow: none;vertical-align:middle"/>. The difference between them is in the second case it is a function of the curvature  <img src="http://latex.codecogs.com/gif.latex?k" style="border: none; box-shadow: none;vertical-align:middle"/> rather than immersion f. It allows to solve simpler PDE, having a better convergence and also restore positions in a way that preserves desired properties.</p>
+
+<h2>Standard Willmore flow</h2>
+
+<p>First consider the solution using standard approach. Let introduce notation which will be used further:  <img src="http://latex.codecogs.com/gif.latex?T=(cos(\theta), sin(\theta))" style="border: none; box-shadow: none;vertical-align:middle"/> is a tangent vector,  <img src="http://latex.codecogs.com/gif.latex?k=\frac{\mathrm d}{\mathrm d s} \left( \theta(s) \right)" style="border: none; box-shadow: none;vertical-align:middle"/> is curvature,
+ <img src="http://latex.codecogs.com/gif.latex?\ast" style="border: none; box-shadow: none;vertical-align:middle"/> denote Hodge star,  <img src="http://latex.codecogs.com/gif.latex?e^*" style="border: none; box-shadow: none;vertical-align:middle"/> means a dual edge,  <img src="http://latex.codecogs.com/gif.latex?\phi" style="border: none; box-shadow: none;vertical-align:middle"/> is an exterior angle for the dual edge, Hodge star on primal 0-form is given by
+ <img src="http://latex.codecogs.com/gif.latex?(\ast_0)_{ii}=L_i=0.5(|f_{i+1} - f_i|+|f_i - f_{i-1}|)" style="border: none; box-shadow: none;vertical-align:middle"/>. We will use the fact that <img src="http://latex.codecogs.com/gif.latex?k=\ast \phi" style="border: none; box-shadow: none;vertical-align:middle"/> to define  <img src="http://latex.codecogs.com/gif.latex?E_1" style="border: none; box-shadow: none;vertical-align:middle"/> for the discrete curves:  <img src="http://latex.codecogs.com/gif.latex?E_1(f)=\sum \phi_i^2/L_i" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p> Another important notation is a gradient with respect to the vertex p denoted by   <img src="http://latex.codecogs.com/gif.latex?\nabla_{p}" style="border: none; box-shadow: none;vertical-align:middle"/> - consider a triangle with a fixed basement  <img src="http://latex.codecogs.com/gif.latex?u" style="border: none; box-shadow: none;vertical-align:middle"/> and a vertex  <img src="http://latex.codecogs.com/gif.latex?p" style="border: none; box-shadow: none;vertical-align:middle"/> opposite to the basement. Without goint into details the gradient will be written as follows:</p>
+
+<p><img src="http://latex.codecogs.com/gif.latex?\nabla_{\gamma_{i-1}} E_i = \frac{\varphi_i}{L_i L_{i-1}} \left( \frac{v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} \hat{u} \right)\\
+\nabla_{\gamma_{i+1}} E_i = \frac{\varphi_i}{L_i^2} \left( \frac{u_{\perp v}-v_{\perp u}}{A_i} + \frac{\varphi_i}{2L_i} (\hat{v}-\hat{u}) \right)\\
+\nabla_{\gamma_i} E_i = -\frac{\varphi_i}{L_i L_{i+1}} \left( \frac{u_{\perp v}}{A_i} + \frac{\varphi_i}{2L_i} \hat{v} \right)\\
+" style="border: none; box-shadow: none;vertical-align:middle"/></p>
+
+<p>A scheme of the proof might be found on the DDG course page. In order to implement the flow, one shall implement these formulas. In my case these formulas didn&#8217;t work as is, I added condition that if the angle is 0, than the gradient is 0, I also use absolute value of the angle. Finally, I suspect that there is a mistake somewhere in the gradient for the previous and the next vertices. However, the goal of having this method here is demonstrating how cumbersome it is and also to demonstrate that theis flow is much slower than the flow in curvature space. So since these formulas work for the square and bunny, it is enough.</p>
+
+<p>At the end I would like to mention that the exterior angle should be in range <img src="http://latex.codecogs.com/gif.latex?\[-\pi, \pi\]" style="border: none; box-shadow: none;vertical-align:middle"/>.
+It might be computed like that: <code>atan2(u.x * v.y - v.x * u.y, dot(u, v))</code>. Curvature for this point is then just <img src="http://latex.codecogs.com/gif.latex?\kappa_i = \phi_i / L_i" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<h2>Length-preserving flow</h2>
+
+<p>If we consider an energy <img src="http://latex.codecogs.com/gif.latex?E_2" style="border: none; box-shadow: none;vertical-align:middle"/> instead of <img src="http://latex.codecogs.com/gif.latex?E_1" style="border: none; box-shadow: none;vertical-align:middle"/> then the resulting flow is much simpler and works for bigger timesteps.</p>
+
+<p>First give a continuum formulation. The gradient with respect to <img src="http://latex.codecogs.com/gif.latex?L^2" style="border: none; box-shadow: none;vertical-align:middle"/> inner product is <img src="http://latex.codecogs.com/gif.latex?\nabla E(k) = -2k" style="border: none; box-shadow: none;vertical-align:middle"/>,
+thus the gradient flow is <img src="http://latex.codecogs.com/gif.latex?\dot{k} = -2k" style="border: none; box-shadow: none;vertical-align:middle"/>. After modifying the curvature we can restore the angle <img src="http://latex.codecogs.com/gif.latex?\theta" style="border: none; box-shadow: none;vertical-align:middle"/> by integrating the curvature <img src="http://latex.codecogs.com/gif.latex?\theta(s) = \theta_0 + \int_0^s d\theta = \theta_0 + \int_0^s \kappa\ ds" style="border: none; box-shadow: none;vertical-align:middle"/>. Having <img src="http://latex.codecogs.com/gif.latex?\theta" style="border: none; box-shadow: none;vertical-align:middle"/> we can calculate tangent vector and from that we can restore immersion <img src="http://latex.codecogs.com/gif.latex?f(s) = f_0 + \int_I T(s)\ ds" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p>The discretization is the following:</p>
+
+<p><img src="http://latex.codecogs.com/gif.latex?\kappa^{t} = \kappa^{t-1} + \tau \nabla E(\kappa^{t-1})\\
+L_i = \frac{1}{2}( |\gamma_{i+1}-\gamma_i| + |\gamma_i-\gamma_{i-1}| )\\
+\phi^{i}=L_{i}\kappa^{t}_i\\
+\theta_i = \sum_{k=0}^i \varphi_k\\
+T_i = (\cos\theta_i,\sin\theta_i)\\
+\gamma_i = \sum_{k=0}^i L_k T_k
+" style="border: none; box-shadow: none;vertical-align:middle"/></p>
+
+<p>In addition, we must take into account that the curve is closed, e.g. <img src="http://latex.codecogs.com/gif.latex?f(0) = f(L)" style="border: none; box-shadow: none;vertical-align:middle"/> and <img src="http://latex.codecogs.com/gif.latex?T(0) = T(L)" style="border: none; box-shadow: none;vertical-align:middle"/>. Without providing a proof - it is equavalent to having the following conditions: <img src="http://latex.codecogs.com/gif.latex?\langle \dot{\kappa}, 1 \rangle = \langle \dot{\kappa}, \gamma_x \rangle = \langle \dot{\kappa}, \gamma_y \rangle = 0" style="border: none; box-shadow: none;vertical-align:middle"/>. For the descrete case, one need to work in a space <img src="http://latex.codecogs.com/gif.latex?R^n" style="border: none; box-shadow: none;vertical-align:middle"/> where n is the number of points on the curve
+but with the inner product immersed by the function itself. It means that we need to create a diagonal mass matrix B where element on the diagonal are just <img src="http://latex.codecogs.com/gif.latex?L_i" style="border: none; box-shadow: none;vertical-align:middle"/> and when computing inner product use it
+<img src="http://latex.codecogs.com/gif.latex?\langle u, v \rangle = \mathsf{u^T B v}" style="border: none; box-shadow: none;vertical-align:middle"/>. The vectors we should orthogonalize are <img src="http://latex.codecogs.com/gif.latex?{1, f^x, f^y, \dot{\kappa}}" style="border: none; box-shadow: none;vertical-align:middle"/> where <img src="http://latex.codecogs.com/gif.latex?f^x" style="border: none; box-shadow: none;vertical-align:middle"/> anf <img src="http://latex.codecogs.com/gif.latex?f^y" style="border: none; box-shadow: none;vertical-align:middle"/> are x and y components of positions. At the end, <img src="http://latex.codecogs.com/gif.latex?\dot{\kappa}" style="border: none; box-shadow: none;vertical-align:middle"/> should be orthogonal to all other vectors.</p>
+
+<p>The algorithm overview is presented below.</p>
+
+<ol>
+<li>Evaluate curvature <img src="http://latex.codecogs.com/gif.latex?k \leftarrow \frac{1}{2}\langle N, \Delta f\rangle" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Pick a desired flow direction <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow -\nabla E_2(k)" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Build a constraint basis <img src="http://latex.codecogs.com/gif.latex?Orthogonalize \{1, f^x, f^y\} " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Project flow onto constraints <img src="http://latex.codecogs.com/gif.latex?\dot{k} \leftarrow \dot{k} - \sum \ll\dot{k}, c_i \gg c_i " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Take an explicit Euler step <img src="http://latex.codecogs.com/gif.latex?k \leftarrow k + \tau \dot{k}" style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Recover tangents <img src="http://latex.codecogs.com/gif.latex? T \leftarrow Integrate(k) " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+<li>Recover positions <img src="http://latex.codecogs.com/gif.latex? f \leftarrow Integrate(T) " style="border: none; box-shadow: none;vertical-align:middle"/></li>
+</ol>
+
+
+<p>Note that the resulting flow is isometric by construction - we do that at two last steps.</p>
+
+<h2>Simulation results and comparison</h2>
+
+<p>The simulation results tell us that in case of the standard approach the biggest stable time step is <img src="http://latex.codecogs.com/gif.latex?\tau <= 10^{-9}" style="border: none; box-shadow: none;vertical-align:middle"/> while for Curvature flow in curvature space we have  <img src="http://latex.codecogs.com/gif.latex?\tau < 1" style="border: none; box-shadow: none;vertical-align:middle"/>.
+So it is up to <img src="http://latex.codecogs.com/gif.latex?10^{9}" style="border: none; box-shadow: none;vertical-align:middle"/> times bigger! Not suprisingly you will wait forever to obtain the flow using standard approach (several minutes) while Crane&#8217;s et al. approach propagates the curve in a second or so.
+Also Crane&#8217;s et al. approach gives isometric flow, while standard doesn&#8217;t. It might be seen on the figure below - point are distributed uniformly in the first case, and not uniformly in other:</p>
+
+<p> <img src="../../../../../images/curv-flow/crane-vs-standard.png" style="vertical-align:middle; background:white"/></p>
+
+<p>Finally, some more picture for the Isometric curvature flow:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/star1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/star2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/star3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/star4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/square1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/square2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>And one more for the standard one:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+<th align="center"> </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><img src="../../../../../images/curv-flow/square-w1.png" style="scale: 0.1"></td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w2.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w3.png" alt="alt text" /> </td>
+<td align="center"> <img src="../../../../../images/curv-flow/square-w4.png" alt="alt text" /> </td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Seam carving algorithm]]></title>
+    <link href="http://KirillLykov.github.com/blog/2013/06/06/seam-carving-algorithm/"/>
+    <updated>2013-06-06T22:41:00+02:00</updated>
+    <id>http://KirillLykov.github.com/blog/2013/06/06/seam-carving-algorithm</id>
+    <content type="html"><![CDATA[<h2>Intro</h2>
+
+<p>Seam carving is an algorithm for content-aware image resizing, it was described in the paper by <a href="http://www.win.tue.nl/~wstahw/2IV05/seamcarving.pdf">S. Avidan &amp; A. Shamir</a>. In contract to stretching, content-aware resizing
+allows to remove/add pixels which has less meaning while saving more important. Pictures below demonstrate this - original picture of the size 332x480 is on the top, the picture after applying seam carving (size is 272x400) is on the bottom</p>
+
+<center>
+<img src="../../../../../images/seamcarving/sea-thai.jpg">
+<img src="../../../../../images/seamcarving/sea-thai-reduced.jpg">
+</center>
+
+
+<p>This algorithm is quite impressive so one may find a lot of articles describing it. Yet as I found most of the authors haven&#8217;t read the original paper and provide a very basic implementation. In this post I will describe the algorithm with all details as it was written by Avidan &amp; Shamir. Yet I will write from the programmers point of view, without going into Math too deep. In addition to algorithms description, I also provide Matlab code.</p>
+
+<!--more-->
+
+
+<h2>Energy</h2>
+
+<p>For simplification, we will describe only reducing the size of the image. But enlarging process is very similar and described in the last section.
+The idea is to remove content that has smaller meaning for the user (contain less information). We will call this information &#8220;energy&#8221;. Thus we need to introduce an energy function that would map a pixel into
+energy value. For instance, we can use gradient of the pixel: <img src="http://latex.codecogs.com/gif.latex?e_1= \left|\frac{\partial I}{\partial x}\right| + \left|\frac{\partial I}{\partial y}\right|" style="border: none; box-shadow: none;vertical-align:middle"/>. If a picture has 3 channels, just sum values of the energy in each channel. The Matlab code below demostates it. The <code>imfilter</code> function just applies the mask to each pixel, so the result dI(i, j)/dx = I(i+1)-I(i-1)/dx where dx = 1.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='matlab'><span class='line'><span class="k">function</span><span class="w"> </span>res <span class="p">=</span><span class="w"> </span><span class="nf">energyRGB</span><span class="p">(</span>I<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="c">% returns energy of all pixelels</span>
+</span><span class='line'><span class="c">% e = |dI/dx| + |dI/dy|</span>
+</span><span class='line'>    <span class="n">res</span> <span class="p">=</span> <span class="n">energyGrey</span><span class="p">(</span><span class="n">I</span><span class="p">(:,</span> <span class="p">:,</span> 1<span class="p">))</span> <span class="o">+</span> <span class="n">energyGrey</span><span class="p">(</span><span class="n">I</span><span class="p">(:,</span> <span class="p">:,</span> 2<span class="p">))</span> <span class="o">+</span> <span class="n">energyGrey</span><span class="p">(</span><span class="n">I</span><span class="p">(:,</span> <span class="p">:,</span> 3<span class="p">));</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span><span class="w"> </span>res <span class="p">=</span><span class="w"> </span><span class="nf">energyGrey</span><span class="p">(</span>I<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="c">% returns energy of all pixelels</span>
+</span><span class='line'><span class="c">% e = |dI/dx| + |dI/dy|</span>
+</span><span class='line'>    <span class="n">res</span> <span class="p">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">imfilter</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span>1<span class="p">,</span>0<span class="p">,</span>1<span class="p">],</span> <span class="s">&#39;replicate&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">imfilter</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span>1<span class="p">;</span>0<span class="p">;</span>1<span class="p">],</span> <span class="s">&#39;replicate&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here is energy function:</p>
+
+<center>
+<img src="../../../../../images/seamcarving/sea-thai-energy.jpg">
+</center>
+
+
+<h2>Seam</h2>
+
+<p>If we delete pixels with minimum energy but random positions, we will get distorted picture. If we delete columns/rows with minimum energy, we will get artifacts. Here by column I mean {(i, j)| j is predefined}, row - {(i, j)| i is predefined}. The solution is to introduce a generalization of column/row (called <code>seam</code>). Formally, let I is n x m image, then a vertical seam is <img src="http://latex.codecogs.com/gif.latex?(s^x)_i=(i, x(j)) s.t. \forall i, \left|x(i) - x(i-1)\right| \leq 1" style="border: none; box-shadow: none;vertical-align:middle"/>, where x: [1,..,n] -> [1,..,m]. It means that a vertical seam is path from the top of the picture to the bottom such that the length of the path in pixels is width of the image, and for each seam element (i,j),
+the next seam element can be only (i+1, j-1), (i+1, j), (i+1, j+1). Similarly, we can define a horizontal seam. Examples of seams are shown on the figure below in black:</p>
+
+<center>
+<img src="../../../../../images/seamcarving/sea-thai-seams.jpg">
+</center>
+
+
+<p>We are looking for a seam with the minimum energy among all seams (in chosen dimension):  <img src="http://latex.codecogs.com/gif.latex?s^* = \[\min_{s} \sum_{i=1}^{n} e(I(s_i)))\]" style="border: none; box-shadow: none;vertical-align:middle"/>.
+The way to find such an optimal way is by using dynamic programming:</p>
+
+<ol>
+<li>Find M - minimum energy for all possible seams for each (i, j):
+
+<ul>
+<li>fill in the first row by energy</li>
+<li>for all rows starting from second:
+  M[i, j] = e[i, j] + min(M[i - 1, j], M[i, j], M[i + 1, j]);</li>
+</ul>
+</li>
+<li>Find the minimum value in the last row of M and traverse back choosing pixels with minimum energy.</li>
+</ol>
+
+
+<p>Note that in Matlab code I had to represent seam as n x m bit matrix. If pixel is in the seam it is 0, otherwise 1.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='matlab'><span class='line'><span class="k">function</span><span class="w"> </span>[optSeamMask, seamEnergy] <span class="p">=</span><span class="w"> </span><span class="nf">findOptSeam</span><span class="p">(</span>energy<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="c">% finds optimal seam</span>
+</span><span class='line'><span class="c">% returns mask with 0 mean a pixel is in the seam</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">% find M for vertical seams</span>
+</span><span class='line'>    <span class="c">% for vertical - use I`</span>
+</span><span class='line'>    <span class="n">M</span> <span class="p">=</span> <span class="n">padarray</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">[</span>0 1<span class="p">],</span> <span class="nb">realmax</span><span class="p">(</span><span class="s">&#39;double&#39;</span><span class="p">));</span> <span class="c">% to avoid handling border elements</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">sz</span> <span class="p">=</span> <span class="nb">size</span><span class="p">(</span><span class="n">M</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="n">sz</span><span class="p">(</span>1<span class="p">)</span>
+</span><span class='line'>        <span class="k">for</span> <span class="nb">j</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="p">(</span><span class="n">sz</span><span class="p">(</span>2<span class="p">)</span> <span class="o">-</span> 1<span class="p">)</span>
+</span><span class='line'>            <span class="n">neighbors</span> <span class="p">=</span> <span class="p">[</span><span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">j</span> <span class="o">-</span> 1<span class="p">)</span> <span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">j</span> <span class="o">+</span> 1<span class="p">)];</span>
+</span><span class='line'>            <span class="n">M</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="p">=</span> <span class="n">M</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">min</span><span class="p">(</span><span class="n">neighbors</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">% find the min element in the last raw</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="n">indJ</span><span class="p">]</span> <span class="p">=</span> <span class="n">min</span><span class="p">(</span><span class="n">M</span><span class="p">(</span><span class="n">sz</span><span class="p">(</span>1<span class="p">),</span> <span class="p">:));</span>
+</span><span class='line'>    <span class="n">seamEnergy</span> <span class="p">=</span> <span class="n">val</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">optSeamMask</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">energy</span><span class="p">),</span> <span class="s">&#39;uint8&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">%go backward and save (i, j)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> <span class="n">sz</span><span class="p">(</span>1<span class="p">)</span> <span class="p">:</span> <span class="o">-</span>1 <span class="p">:</span> 2
+</span><span class='line'>        <span class="c">%optSeam(i) = indJ - 1;</span>
+</span><span class='line'>        <span class="n">optSeamMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="n">indJ</span> <span class="o">-</span> 1<span class="p">)</span> <span class="p">=</span> 1<span class="p">;</span> <span class="c">% -1 because of padding on 1 element from left</span>
+</span><span class='line'>        <span class="n">neighbors</span> <span class="p">=</span> <span class="p">[</span><span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="n">indJ</span> <span class="o">-</span> 1<span class="p">)</span> <span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="n">indJ</span><span class="p">)</span> <span class="n">M</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="n">indJ</span> <span class="o">+</span> 1<span class="p">)];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="n">indIncr</span><span class="p">]</span> <span class="p">=</span> <span class="n">min</span><span class="p">(</span><span class="n">neighbors</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">seamEnergy</span> <span class="p">=</span> <span class="n">seamEnergy</span> <span class="o">+</span> <span class="n">val</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">indJ</span> <span class="p">=</span> <span class="n">indJ</span> <span class="o">+</span> <span class="p">(</span><span class="n">indIncr</span> <span class="o">-</span> 2<span class="p">);</span> <span class="c">% (x - 2): [1,2]-&gt;[-1,1]]</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">optSeamMask</span><span class="p">(</span>1<span class="p">,</span> <span class="n">indJ</span> <span class="o">-</span> 1<span class="p">)</span> <span class="p">=</span> 1<span class="p">;</span> <span class="c">% -1 because of padding on 1 element from left</span>
+</span><span class='line'>    <span class="n">optSeamMask</span> <span class="p">=</span> <span class="o">~</span><span class="n">optSeamMask</span><span class="p">;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In order to find a horizontal seam, just pass a transposed energy matrix to <code>findOptSeam</code>.</p>
+
+<h2>Find optimal order of deleting seams</h2>
+
+<p>Now we can compute seams and using the code below we can even remove them from an image:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='matlab'><span class='line'><span class="k">function</span><span class="w"> </span>imageReduced <span class="p">=</span><span class="w"> </span><span class="nf">reduceImageByMaskVertical</span><span class="p">(</span>image, seamMask<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="w">    </span><span class="n">imageReduced</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 1<span class="p">),</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 2<span class="p">)</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 3<span class="p">));</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> 1 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">seamMask</span><span class="p">,</span> 1<span class="p">)</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 1<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="n">seamMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:),</span> 1<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 2<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="n">seamMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:),</span> 2<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 3<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="n">seamMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:),</span> 3<span class="p">);</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span><span class="w"> </span>imageReduced <span class="p">=</span><span class="w"> </span><span class="nf">reduceImageByMaskHorizontal</span><span class="p">(</span>image, seamMask<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="w">    </span><span class="n">imageReduced</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 1<span class="p">)</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 2<span class="p">),</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 3<span class="p">));</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">j</span> <span class="p">=</span> 1 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">seamMask</span><span class="p">,</span> 2<span class="p">)</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="n">seamMask</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">),</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="n">seamMask</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">),</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageReduced</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">)</span> <span class="p">=</span> <span class="n">image</span><span class="p">(</span><span class="n">seamMask</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">),</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">);</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It is already a good tool for reducing image in one dimension - just find and delete seam as many times as you need. But what if you need to reduce the
+size of the image in both directions? How to decide at every iteration whether it is better (in terms of energy minimization) to delete a column or a row?
+This problem is solved, again, using dynamic programming. Let n&#8217; x m&#8217; are desirable size of the image (n&#8217; &lt; n, m&#8217; &lt; m). We introduce a transport matrix T which defines for every n&#8217; x m&#8217; the cost of the optimal sequence
+of horizontal and vertical seam removal operations. It is more suitable to introduce r = n - n&#8217; and c = m - m&#8217; which defines number of horizontal
+and vertical removal operations. In addition to T we introduce a map of the size r x c TBM which specifies for every T(i, j) whether we came to this point using
+horizontal (0) or vertical (1) seam removal operation. Pseudocode is shown below:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">1</span><span class="p">)</span> <span class="n">T</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="mi">2</span><span class="p">)</span> <span class="n">Intialize</span> <span class="n">borders</span> <span class="n">of</span> <span class="n">T</span><span class="o">:</span>
+</span><span class='line'>   <span class="k">for</span> <span class="n">all</span> <span class="n">j</span> <span class="p">{</span>
+</span><span class='line'>       <span class="n">T</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">T</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">E</span><span class="p">(</span><span class="n">seamVertical</span><span class="p">);</span>
+</span><span class='line'>   <span class="p">}</span>
+</span><span class='line'>   <span class="k">for</span> <span class="n">all</span> <span class="n">i</span> <span class="p">{</span>
+</span><span class='line'>       <span class="n">T</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="n">T</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">E</span><span class="p">(</span><span class="n">seamHorizontal</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="mi">3</span><span class="p">)</span> <span class="n">Initialize</span> <span class="n">borders</span> <span class="n">of</span> <span class="n">TBM</span><span class="o">:</span>
+</span><span class='line'>   <span class="k">for</span> <span class="n">all</span> <span class="n">j</span> <span class="p">{</span> <span class="n">T</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'>   <span class="k">for</span> <span class="n">all</span> <span class="n">i</span> <span class="p">{</span> <span class="n">T</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+</span><span class='line'><span class="mi">4</span><span class="p">)</span> <span class="n">Fill</span> <span class="n">in</span> <span class="n">T</span> <span class="n">and</span> <span class="n">TBM</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">like</span> <span class="n">pseudocode</span><span class="p">)</span><span class="o">:</span>
+</span><span class='line'>   <span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span> <span class="n">to</span> <span class="n">r</span> <span class="p">{</span>
+</span><span class='line'>       <span class="n">imageWithoutRow</span> <span class="o">=</span> <span class="n">image</span><span class="p">;</span>
+</span><span class='line'>       <span class="k">for</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">2</span> <span class="n">to</span> <span class="n">c</span> <span class="p">{</span>
+</span><span class='line'>            <span class="n">energy</span> <span class="o">=</span> <span class="n">computeEnergy</span><span class="p">(</span><span class="n">imageWithoutRow</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">horizontalSeamEnergy</span> <span class="o">=</span> <span class="n">findHorizontalSeamEnergy</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>      <span class="n">verticalSeamEnergy</span> <span class="o">=</span> <span class="n">findVerticalSeamEnergy</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>      <span class="n">tVertical</span> <span class="o">=</span> <span class="n">T</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">verticalSeamEnergy</span><span class="p">;</span>
+</span><span class='line'>      <span class="n">tHorizontal</span> <span class="o">=</span> <span class="n">T</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="n">_</span> <span class="n">horizontalSeamEnergy</span><span class="p">;</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="n">tVertical</span> <span class="o">&lt;</span> <span class="n">tHorizontal</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>         <span class="n">T</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">tVertical</span><span class="p">;</span>
+</span><span class='line'>         <span class="n">transBitMask</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>         <span class="n">T</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">tHorizontal</span><span class="p">;</span>    
+</span><span class='line'>         <span class="n">transBitMask</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>            <span class="c1">// move from left to right - delete vertical seam</span>
+</span><span class='line'>            <span class="n">imageWithoutRow</span> <span class="o">=</span> <span class="n">removeVerticalSeam</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">energy</span> <span class="o">=</span> <span class="n">computeEnergy</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">image</span> <span class="o">=</span> <span class="n">removeHorizontalSeam</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="mi">5</span><span class="p">)</span> <span class="n">Go</span> <span class="n">backward</span> <span class="n">starting</span> <span class="n">from</span> <span class="n">T</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="n">and</span> <span class="n">following</span> <span class="n">the</span> <span class="n">TBM</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And Matlab imeplementation:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+</pre></td><td class='code'><pre><code class='matlab'><span class='line'><span class="k">function</span><span class="w"> </span>[T, transBitMask] <span class="p">=</span><span class="w"> </span><span class="nf">findTransportMatrix</span><span class="p">(</span>sizeReduction, image<span class="p">)</span><span class="w"></span>
+</span><span class='line'><span class="c">% find optimal order of removing raws and columns</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">T</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="n">sizeReduction</span><span class="p">(</span>1<span class="p">)</span> <span class="o">+</span> 1<span class="p">,</span> <span class="n">sizeReduction</span><span class="p">(</span>2<span class="p">)</span> <span class="o">+</span> 1<span class="p">,</span> <span class="s">&#39;double&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">transBitMask</span> <span class="p">=</span> <span class="nb">ones</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="o">-</span>1<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">% fill in borders</span>
+</span><span class='line'>    <span class="n">imageNoRow</span> <span class="p">=</span> <span class="n">image</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> 1<span class="p">)</span>
+</span><span class='line'>        <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">imageNoRow</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">optSeamMask</span><span class="p">,</span> <span class="n">seamEnergyRow</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="o">&#39;</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">imageNoRow</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">imageNoRow</span><span class="p">,</span> <span class="n">optSeamMask</span><span class="p">,</span> 0<span class="p">);</span>
+</span><span class='line'>        <span class="n">transBitMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> 1<span class="p">)</span> <span class="p">=</span> 0<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">T</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> 1<span class="p">)</span> <span class="p">=</span> <span class="n">T</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> 1<span class="p">)</span> <span class="o">+</span> <span class="n">seamEnergyRow</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">end</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">imageNoColumn</span> <span class="p">=</span> <span class="n">image</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">j</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> 2<span class="p">)</span>
+</span><span class='line'>        <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">imageNoColumn</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">optSeamMask</span><span class="p">,</span> <span class="n">seamEnergyColumn</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">imageNoColumn</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">imageNoColumn</span><span class="p">,</span> <span class="n">optSeamMask</span><span class="p">,</span> 1<span class="p">);</span>
+</span><span class='line'>        <span class="n">transBitMask</span><span class="p">(</span>1<span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="p">=</span> 1<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">T</span><span class="p">(</span>1<span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="p">=</span> <span class="n">T</span><span class="p">(</span>1<span class="p">,</span> <span class="nb">j</span> <span class="o">-</span> 1<span class="p">)</span> <span class="o">+</span> <span class="n">seamEnergyColumn</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">end</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">% on the borders, just remove one column and one row before proceeding</span>
+</span><span class='line'>    <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">optSeamMask</span><span class="p">,</span> <span class="n">seamEnergyRow</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="o">&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">image</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">optSeamMask</span><span class="p">,</span> 0<span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">optSeamMask</span><span class="p">,</span> <span class="n">seamEnergyColumn</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">image</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">optSeamMask</span><span class="p">,</span> 1<span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c">% fill in internal part</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> 1<span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">imageWithoutRow</span> <span class="p">=</span> <span class="n">image</span><span class="p">;</span> <span class="c">% copy for deleting columns</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span> <span class="nb">j</span> <span class="p">=</span> 2 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> 2<span class="p">)</span>
+</span><span class='line'>            <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">imageWithoutRow</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="p">[</span><span class="n">optSeamMaskRow</span><span class="p">,</span> <span class="n">seamEnergyRow</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="o">&#39;</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">imageNoRow</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">imageWithoutRow</span><span class="p">,</span> <span class="n">optSeamMaskRow</span><span class="p">,</span> 0<span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="p">[</span><span class="n">optSeamMaskColumn</span><span class="p">,</span> <span class="n">seamEnergyColumn</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">imageNoColumn</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">imageWithoutRow</span><span class="p">,</span> <span class="n">optSeamMaskColumn</span><span class="p">,</span> 1<span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">neighbors</span> <span class="p">=</span> <span class="p">[(</span><span class="n">T</span><span class="p">(</span><span class="nb">i</span> <span class="o">-</span> 1<span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="o">+</span> <span class="n">seamEnergyRow</span><span class="p">)</span> <span class="p">(</span><span class="n">T</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span> <span class="o">-</span> 1<span class="p">)</span> <span class="o">+</span> <span class="n">seamEnergyColumn</span><span class="p">)];</span>
+</span><span class='line'>            <span class="p">[</span><span class="n">val</span><span class="p">,</span> <span class="n">ind</span><span class="p">]</span> <span class="p">=</span> <span class="n">min</span><span class="p">(</span><span class="n">neighbors</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">T</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="p">=</span> <span class="n">val</span><span class="p">;</span>
+</span><span class='line'>            <span class="n">transBitMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">)</span> <span class="p">=</span> <span class="n">ind</span> <span class="o">-</span> 1<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c">% move from left to right</span>
+</span><span class='line'>            <span class="n">imageWithoutRow</span> <span class="p">=</span> <span class="n">imageNoColumn</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">end</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">energy</span> <span class="p">=</span> <span class="n">energyRGB</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">optSeamMaskRow</span><span class="p">,</span> <span class="n">seamEnergyRow</span><span class="p">]</span> <span class="p">=</span> <span class="n">findOptSeam</span><span class="p">(</span><span class="n">energy</span><span class="o">&#39;</span><span class="p">);</span>
+</span><span class='line'>         <span class="c">% move from top to bottom</span>
+</span><span class='line'>        <span class="n">image</span> <span class="p">=</span> <span class="n">reduceImageByMask</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">optSeamMaskRow</span><span class="p">,</span> 0<span class="p">);</span>
+</span><span class='line'>    <span class="k">end</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Enlarging an image</h2>
+
+<p>In order to enlarge a picture, we compute k optimal seams for deleting but then, instead of deleting, copy average between neighbors:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='matlab'><span class='line'><span class="k">function</span><span class="w"> </span>imageEnlarged <span class="p">=</span><span class="w"> </span><span class="nf">enlargeImageByMaskVertical</span><span class="p">(</span>image, seamMask<span class="p">)</span><span class="w"></span>
+</span><span class='line'>
+</span><span class='line'><span class="w">    </span><span class="n">avg</span> <span class="p">=</span> <span class="p">@(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="p">(</span><span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="o">-</span>1<span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="o">+</span>1<span class="p">,</span> <span class="n">k</span><span class="p">))</span><span class="o">/</span>2<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">imageEnlarged</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 1<span class="p">),</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 2<span class="p">)</span> <span class="o">+</span> 1<span class="p">,</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 3<span class="p">));</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">i</span> <span class="p">=</span> 1 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">seamMask</span><span class="p">,</span> 1<span class="p">)</span>
+</span><span class='line'>        <span class="nb">j</span> <span class="p">=</span> <span class="nb">find</span><span class="p">(</span><span class="n">seamMask</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:)</span> <span class="o">~=</span> 1<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 1<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> 1<span class="p">:</span><span class="nb">j</span><span class="p">,</span> 1<span class="p">),</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">),</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> 1<span class="p">)];</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 2<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> 1<span class="p">:</span><span class="nb">j</span><span class="p">,</span> 2<span class="p">),</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">),</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> 2<span class="p">)];</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="p">:,</span> 3<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> 1<span class="p">:</span><span class="nb">j</span><span class="p">,</span> 3<span class="p">),</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">),</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> 3<span class="p">)];</span>
+</span><span class='line'>    <span class="k">end</span><span class="p">;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span><span class="w"> </span>imageEnlarged <span class="p">=</span><span class="w"> </span><span class="nf">enlargeImageByMaskHorizontal</span><span class="p">(</span>image, seamMask<span class="p">)</span><span class="w"></span>
+</span><span class='line'>
+</span><span class='line'><span class="w">    </span><span class="n">avg</span> <span class="p">=</span> <span class="p">@(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="p">(</span><span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="o">-</span>1<span class="p">,</span> <span class="nb">j</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="o">+</span>1<span class="p">,</span> <span class="nb">j</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span><span class="o">/</span>2<span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">imageEnlarged</span> <span class="p">=</span> <span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 1<span class="p">)</span> <span class="o">+</span> 1<span class="p">,</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 2<span class="p">),</span> <span class="nb">size</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> 3<span class="p">));</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">j</span> <span class="p">=</span> 1 <span class="p">:</span> <span class="nb">size</span><span class="p">(</span><span class="n">seamMask</span><span class="p">,</span> 2<span class="p">)</span>
+</span><span class='line'>        <span class="nb">i</span> <span class="p">=</span> <span class="nb">find</span><span class="p">(</span><span class="n">seamMask</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">)</span> <span class="o">~=</span> 1<span class="p">);</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span>1<span class="p">:</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">);</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">);</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 1<span class="p">)];</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span>1<span class="p">:</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">);</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">);</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 2<span class="p">)];</span>
+</span><span class='line'>        <span class="n">imageEnlarged</span><span class="p">(:,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">)</span> <span class="p">=</span> <span class="p">[</span><span class="n">image</span><span class="p">(</span>1<span class="p">:</span><span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">);</span> <span class="n">avg</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nb">i</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">);</span> <span class="n">image</span><span class="p">(</span><span class="nb">i</span><span class="o">+</span>1<span class="p">:</span><span class="k">end</span><span class="p">,</span> <span class="nb">j</span><span class="p">,</span> 3<span class="p">)];</span>
+</span><span class='line'>    <span class="k">end</span><span class="p">;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Source code</h2>
+
+<p>The full code of the program is available <a href="https://github.com/KirillLykov/cvision-algorithms/blob/master/src/seamCarving.m">here</a>.
+Seam carving is also implemented in <a href="http://www.imagemagick.org/Usage/resize/#liquid-rescale">ImageMagick</a>. So if you need a
+C++ implementation, check out ImageMagick code.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Level sets with OpenVDB. Quick introduction. Part 1]]></title>
+    <link href="http://KirillLykov.github.com/blog/2013/04/02/level-set-openvdb-intro-1/"/>
+    <updated>2013-04-02T22:00:00+02:00</updated>
+    <id>http://KirillLykov.github.com/blog/2013/04/02/level-set-openvdb-intro-1</id>
+    <content type="html"><![CDATA[<h2>Intro</h2>
+
+<p>From the high-level of view <a href="http://en.wikipedia.org/wiki/Level_set">level-set method</a> (further just level set) can be considered as geometry representation, in addition to polygonal meshes and NURBS. This geometry representation simplifies solution of some problems in Computational Geometry, physical based modeling in Computer Graphics. Although level sets were first used for geometry tracking in 80s by Osher and Sethian, the main development of this method took place in the end of 90s and during 2000s.</p>
+
+<!--more-->
+
+
+<p><a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grids. In particular, it contains tools to work with level sets. OpenVDB is a very new library, before this library there was only one well-developed library addressing level set - Field3D. Yet it didn&#8217;t fit my needs so I wrote <a href="https://github.com/KirillLykov/levelset-light">levelset-light library</a> for my needs.</p>
+
+<p>In order to use OpenVDB you need to build it. In case if you use Mac OS the following post might be useful for you - <a href="" title="http://kirilllykov.github.com/blog/2013/02/04/openvdb-installation-on-macos/">OpenVDB build on MacOS</a>. Pay attention to the tools <code>vdb_print</code> and <code>vdb_view</code> in the <code>bin</code> folder in the OpenVDB installation directory. I will use these tools for visualization of the computation results so if you want to follow, check that they are working. In case if you are using Mac, you might have problems with <code>vdb_view</code> because shader language version used inside is not supported by Mac. In order to fix it, have a look inside of <a href="https://github.com/KirillLykov/OpenVDB-patches/blob/master/openvdb-0-103-1/openvdb-0-103-1-mac-os-10.7.5.patch">this patch</a>. One more comment before we start, if you are suffering from the long compilation time of the code which uses OpenVDB, check out <a href="https://groups.google.com/forum/#!topic/openvdb-forum/LLUeaDB1tgw">this discussion</a>.</p>
+
+<h2>Level sets from mathematical point of view</h2>
+
+<p>Level set of an implicit function is a set of points where this function has a predefined value. For instance, lets consider a function <img src="http://latex.codecogs.com/gif.latex?f(x) = x^2 - 1" style="border: none; box-shadow: none;vertical-align:middle"/>. It describes a parabola which intersects axe x in two points -1 and 1, thus the set of points where f is equal to 0 (a predefined value, can be any number) is  <img src="http://latex.codecogs.com/gif.latex?\{x | f(x) = 0\} = \{-1, 1\}" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-1.png" width="400">
+</center>
+
+
+<p>In practice, a level set function is usually constructed as a signed distance function. I.e. for a given surface and an arbitrary point, we define such a function as a signed distance from the point to the surface: if the point is outside the surface the function value is positive, if it is inside - negative, and, finally, 0 if it is on the surface.</p>
+
+<p>Coming back to the example above, the surface is composed of two points in 1D space: {-1, 1}, all points which belongs segment (-1, 1) are inside our surface, other - outside. We want to construct a signed distance function so, in order to start, lets get an arbitrary point 2 which is outside of the surface. The distance from this point to the surface is, obviously, 1. It means that we cannot just use <img src="http://latex.codecogs.com/gif.latex?f(x) = x^2 - 1" style="border: none; box-shadow: none;vertical-align:middle"/>. For another point 0 the distance from the point to the surface is -1. As one might guess the signed distance function for our surface is <img src="http://latex.codecogs.com/gif.latex?f(x) = |x| - 1" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-2.png" width="400">
+</center>
+
+
+<p>1D space is not really interesting so lets move to 2D and construct a signed distance function for a circle with the center in the origin and radius R. Lets get an arbitrary point <strong>x</strong> = (x, y) outside the circle (vectors are in bold here and further). The distance from the origin to this point is basically <img src="http://latex.codecogs.com/gif.latex?\|x\|= \sqrt{x^2 + y^2}" style="border: none; box-shadow: none;vertical-align:middle"/>. Thus the distance from the point
+to the surface is |<strong>x</strong>| - R.</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-3.png" width="400">
+</center>
+
+
+<p>In 3D space, where  <strong>x</strong>=(x, y, z), the distance to the z-axis parallel cylinder surface is represented by the same function  <img src="http://latex.codecogs.com/gif.latex?f(\boldmath{x})= \sqrt{x^2 + y^2} - R" style="border: none; box-shadow: none;vertical-align:middle"/>.</p>
+
+<p>Following similar logic, one can write distance functions for other figures such as sphere,  torus,  cone, etc.</p>
+
+<p>It is cool to have a new geometry representation for primitives but what if one wants to use something more complicated? E.g. surface which constructed by surfaces of two cylinders A and B. For simplicity, cylinders are z-axe oriented, so they are described by their centers and radiuses. For cylinder A, the center and the radius are denoted by <img src="http://latex.codecogs.com/gif.latex?(x_A, y_A), R_A" style="border: none; box-shadow: none;vertical-align:middle"/>, similar for cylinder B. Given an arbitrary point <strong>x</strong> outside interior of these figures, we have two distances from the cylinders: <img src="http://latex.codecogs.com/gif.latex?d_A = f_A(x) = \sqrt{(x - x_A)^2 + (y - y_A)^2} - R_A" style="border: none; box-shadow: none;vertical-align:middle"/>, and similar d_B. The cross-section of this two cylinder is shown below.</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-4.png" width="400">
+</center>
+
+
+<p>Because we want to have union of this two figures, we use <img src="http://latex.codecogs.com/gif.latex?min(d_A, d_B)" style="border: none; box-shadow: none;vertical-align:middle"/> as a value of the distance function for <strong>x</strong>. In case if <strong>x</strong> is interior part, min will be applied to negative values and, thus, pick up the biggest in the module. Thus the part of the surface, which is inside the union of two of them, will disappear.</p>
+
+<p>Other set operations on level sets are represented below:</p>
+
+<ul>
+<li><p>Union: <img src="http://latex.codecogs.com/gif.latex?f_{union}(x, f_1, f_2) = min(f_1(x), f_2(x))" style="border: none; box-shadow: none;vertical-align:middle"/></p></li>
+<li><p>Intersection: <img src="http://latex.codecogs.com/gif.latex?f_{intersect}(x, f_1, f_2) = max(f_1(x), f_2(x))" style="border: none; box-shadow: none;vertical-align:middle"/></p></li>
+<li><p>Complement: <img src="http://latex.codecogs.com/gif.latex?f_{complement}(x, f) = -f(x)" style="border: none; box-shadow: none;vertical-align:middle"/></p></li>
+<li><p>Difference (A \ B): <img src="http://latex.codecogs.com/gif.latex?f_{difference}(x, f_1, f_2) = max(f_1(x), -f_2(x))" style="border: none; box-shadow: none;vertical-align:middle"/></p></li>
+</ul>
+
+
+<h2>From continuous level sets to discrete</h2>
+
+<p>Although a level set might be represented by a set of continuous level set functions and operations on them (similar to NURBS), in practice, the level set geometry is stored in a file as a grid. Every grid vertex stores the exact function value. Thus if we want to get the distance from an arbitrary point in the space to the surface, we use interpolation: find the cell of the grid to which this point belongs to and interpolate function value in this point. For instance, in 2D case for a point (x, y) we can compute a pair of indexes (i, j) which describes the cell for the point as shown on the picture below:</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-5.png" width="400">
+</center>
+
+
+<h2>Create a level set in OpenVDB</h2>
+
+<p>So lets create a level set of a cylinder with center in the origin and z-axis oriented. In order to do that, we need to specify the radius of the cylinder, the grid dimensions, and the voxel (cell of the grid) size.
+Pay attention that in OpenVDB you have an index space for your grid and a world space. Index space for the grid is <img src="http://latex.codecogs.com/gif.latex?\{(i, j, k) | i,j,k \in \mathbb{R}\}" style="border: none; box-shadow: none;vertical-align:middle"/>, note that index might be negative. If (i, j, k) is a point in the index space, then <img src="http://latex.codecogs.com/gif.latex?(i * h_x, j * h_y, k * h_z)" style="border: none; box-shadow: none;vertical-align:middle"/> is the point in the world space, where <img src="http://latex.codecogs.com/gif.latex?(h_x, h_y, h_z)" style="border: none; box-shadow: none"/> is a vector of voxel sizes.
+The code below creates a grid which contains floats, specifies bounding box of our level set in the index space, and pass everything to makeCylinder. For simplicity uniform grid is used so <img src="http://latex.codecogs.com/gif.latex?h_x = h_y = h_z" style="border: none; box-shadow: none"/>. In order to modify elements of the grid, accessor object is used. Inside, we have loop on all points in the grid where we compute value of the function. In order to use our grid further, we need to define interpolator which will be used with this grid. It is done by calling method <code>setTransform</code>.
+It is easy to see that <code>makeCylinder</code> might be generalized by introducing additional argument of type <code>std::function\&lt;float (const Vec3d&amp;)\&gt; lsFunc</code> (in C++11) which allows to fill in a grid by any signed distance level set function.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include &lt;openvdb/openvdb.h&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">openvdb</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">makeCylinder</span><span class="p">(</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">grid</span><span class="p">,</span> <span class="kt">float</span> <span class="n">radius</span><span class="p">,</span> <span class="k">const</span> <span class="n">CoordBBox</span><span class="o">&amp;</span> <span class="n">indexBB</span><span class="p">,</span> <span class="kt">double</span> <span class="n">h</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">typename</span> <span class="n">FloatGrid</span><span class="o">::</span><span class="n">Accessor</span> <span class="n">accessor</span> <span class="o">=</span> <span class="n">grid</span><span class="o">-&gt;</span><span class="n">getAccessor</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">i</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">x</span><span class="p">();</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">x</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">j</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">y</span><span class="p">();</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">y</span><span class="p">();</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">k</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">z</span><span class="p">();</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">z</span><span class="p">();</span> <span class="o">++</span><span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// transform point (i, j, k) of index space into world space</span>
+</span><span class='line'>        <span class="n">Vec3d</span> <span class="n">p</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">j</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">k</span> <span class="o">*</span> <span class="n">h</span><span class="p">);</span>
+</span><span class='line'>        <span class="c1">// compute level set function value</span>
+</span><span class='line'>        <span class="kt">float</span> <span class="n">distance</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">())</span> <span class="o">-</span> <span class="n">radius</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">accessor</span><span class="p">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">Coord</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">distance</span><span class="p">);</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">grid</span><span class="o">-&gt;</span><span class="n">setTransform</span><span class="p">(</span><span class="n">openvdb</span><span class="o">::</span><span class="n">math</span><span class="o">::</span><span class="n">Transform</span><span class="o">::</span><span class="n">createLinearTransform</span><span class="p">(</span><span class="n">h</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">createAndSaveCylinder</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">initialize</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">grid</span> <span class="o">=</span> <span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="mf">2.0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">CoordBBox</span> <span class="n">indexBB</span><span class="p">(</span><span class="n">Coord</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">),</span> <span class="n">Coord</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">));</span>
+</span><span class='line'>  <span class="n">makeCylinder</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="mf">5.0f</span><span class="p">,</span> <span class="n">indexBB</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// specify dataset name</span>
+</span><span class='line'>  <span class="n">grid</span><span class="o">-&gt;</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;LevelSetCylinder&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// save grid in the file</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">File</span> <span class="n">file</span><span class="p">(</span><span class="s">&quot;mygrids.vdb&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">GridPtrVec</span> <span class="n">grids</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">grids</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">file</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">grids</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">file</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After running this application, you should get something like that:</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-6.png" width="400">
+</center>
+
+
+<h2>Create a narrow-band level set</h2>
+
+<p>It is cool to be able to create and save a regular grid in the file. Yet there is one pitfall - the file containing simple cylinder is 2.67MB in size:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">bash</span><span class="o">-</span><span class="mf">3.2</span><span class="err">$</span> <span class="n">vdb_print</span> <span class="n">mygrids</span><span class="p">.</span><span class="n">vdb</span>
+</span><span class='line'><span class="n">LevelSetCylinder</span>  <span class="kt">float</span> <span class="o">-</span><span class="mi">20</span> <span class="o">-</span><span class="mi">20</span> <span class="o">-</span><span class="mi">20</span>  <span class="mi">20</span> <span class="mi">20</span> <span class="mi">20</span>           <span class="mi">41</span><span class="n">x41x41</span>  <span class="mf">68.9</span><span class="n">KVox</span> <span class="mf">2.76</span><span class="n">MB</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you might guess there are a lot information in the grid which we are not interested in - all grid vertices which are far away from the surface  <img src="http://latex.codecogs.com/gif.latex?\{x | f(x) = 0\}" style="border: none; box-shadow: none;vertical-align:middle"/>. OpenVDB allows to store only points which are in vicinity of the surface. The code below demonstrates it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">openvdb</span><span class="p">;</span>
+</span><span class='line'><span class="kt">void</span> <span class="n">makeCylinder</span><span class="p">(</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">grid</span><span class="p">,</span> <span class="kt">float</span> <span class="n">radius</span><span class="p">,</span> <span class="k">const</span> <span class="n">CoordBBox</span><span class="o">&amp;</span> <span class="n">indexBB</span><span class="p">,</span> <span class="kt">double</span> <span class="n">h</span><span class="p">,</span> <span class="kt">float</span> <span class="n">backgroundValue</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">typename</span> <span class="n">FloatGrid</span><span class="o">::</span><span class="n">Accessor</span> <span class="n">accessor</span> <span class="o">=</span> <span class="n">grid</span><span class="o">-&gt;</span><span class="n">getAccessor</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// outputGrid voxel sizes</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">i</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">x</span><span class="p">();</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">x</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">j</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">y</span><span class="p">();</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">y</span><span class="p">();</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="k">for</span> <span class="p">(</span><span class="n">Int32</span> <span class="n">k</span> <span class="o">=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">min</span><span class="p">().</span><span class="n">z</span><span class="p">();</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">indexBB</span><span class="p">.</span><span class="n">max</span><span class="p">().</span><span class="n">z</span><span class="p">();</span> <span class="o">++</span><span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">Vec3d</span> <span class="n">p</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">j</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">k</span> <span class="o">*</span> <span class="n">h</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="kt">float</span> <span class="n">distance</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="p">.</span><span class="n">z</span><span class="p">())</span> <span class="o">-</span> <span class="n">radius</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">backgroundValue</span><span class="p">)</span>
+</span><span class='line'>          <span class="n">accessor</span><span class="p">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">Coord</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">distance</span><span class="p">);</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">grid</span><span class="o">-&gt;</span><span class="n">signedFloodFill</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">grid</span><span class="o">-&gt;</span><span class="n">setTransform</span><span class="p">(</span><span class="n">openvdb</span><span class="o">::</span><span class="n">math</span><span class="o">::</span><span class="n">Transform</span><span class="o">::</span><span class="n">createLinearTransform</span><span class="p">(</span><span class="n">h</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">createAndWriteGrid</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">float</span> <span class="n">backgroundValue</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">grid</span> <span class="o">=</span> <span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">backgroundValue</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">CoordBBox</span> <span class="n">indexBB</span><span class="p">(</span><span class="n">Coord</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">),</span> <span class="n">Coord</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">));</span>
+</span><span class='line'>  <span class="n">makeCylinder</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="mf">5.0f</span><span class="p">,</span> <span class="n">indexBB</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">backgroundValue</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">grid</span><span class="o">-&gt;</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;LevelSetSphere&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">File</span> <span class="n">file</span><span class="p">(</span><span class="s">&quot;mygrids.vdb&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">GridPtrVec</span> <span class="n">grids</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">grids</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">file</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">grids</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">file</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For every point it saves a value in the grid only if <img src="http://latex.codecogs.com/gif.latex?d \in (-2, 2)" style="border: none; box-shadow: none;vertical-align:middle"/>. In the code, <code>backgroundValue</code> specifies the module of this distance. Note, that the call of the method <code>signedFloodFill()</code> propagates the sign from initialized grid points to the uninitialized, since the background value is set in the grid by module. <code>signedFloodFill()</code> might be used on closed surfaces only, so I picked up a sphere instead of a cylinder.
+If you run this code and use vdb_print to check out the information about grid you will get that the grid is 27x27x27 instead of 40x40x40.
+For a more optimal code for sphere generation, check out <code>openvdb/tools/LevelSetSphere.h</code>.</p>
+
+<center>
+<img src="../../../../../images/openvdb/ls-7.png" width="400">
+</center>
+
+
+<h2>Read the grid and interpolate a level set function value in a point</h2>
+
+<p>Reading the grid is straight forward, the code below demonstrates it. Pay attention how to use linear interpolator in order to find a value of the level set function for an arbitrary point. Venusstatue.vdb is available <a href="http://www.openvdb.org/download/models/venusstatue.vdb.zip">here</a>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include &lt;openvdb/openvdb.h&gt;</span>
+</span><span class='line'><span class="cp">#include &lt;openvdb/tools/Interpolation.h&gt;</span>
+</span><span class='line'><span class="cp">#include &lt;openvdb/tools/GridSampling.h&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">readGrid</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">initialize</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">File</span> <span class="n">inputFile</span><span class="p">(</span><span class="s">&quot;venusstatue.vdb&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">inputFile</span><span class="p">.</span><span class="n">open</span><span class="p">();</span>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">GridBase</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">baseGrid</span> <span class="o">=</span> <span class="n">inputFile</span><span class="p">.</span><span class="n">readGrid</span><span class="p">(</span><span class="s">&quot;ls_venus_statue&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">inputFile</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">inputGrid</span> <span class="o">=</span> <span class="n">openvdb</span><span class="o">::</span><span class="n">gridPtrCast</span><span class="o">&lt;</span><span class="n">openvdb</span><span class="o">::</span><span class="n">FloatGrid</span><span class="o">&gt;</span><span class="p">(</span><span class="n">baseGrid</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">tools</span><span class="o">::</span><span class="n">GridSampler</span><span class="o">&lt;</span><span class="n">openvdb</span><span class="o">::</span><span class="n">FloatTree</span><span class="p">,</span> <span class="n">openvdb</span><span class="o">::</span><span class="n">tools</span><span class="o">::</span><span class="n">BoxSampler</span><span class="o">&gt;</span>  <span class="n">interpolator</span><span class="p">(</span><span class="n">inputGrid</span><span class="o">-&gt;</span><span class="n">constTree</span><span class="p">(),</span> <span class="n">inputGrid</span><span class="o">-&gt;</span><span class="n">transform</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">Vec3d</span> <span class="n">p</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span> <span class="c1">//just a point in world space</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kt">float</span> <span class="n">interpolatedValue</span> <span class="o">=</span> <span class="n">interpolator</span><span class="p">.</span><span class="n">wsSample</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="c1">//ws denotes world space</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In the next part I will write about more advanced things such as deforming level set surfaces using PDE.</p>
+
+<p><strong>If you have any questions / suggestions about this material or a collaboration idea regarding level sets / openvdb, feel free to contact me.</strong></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Convert OpenNI (*.oni) files into avi - oni2avi]]></title>
+    <link href="http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/"/>
+    <updated>2013-03-19T23:27:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi</id>
+    <content type="html"><![CDATA[<p>OpenNI is a library for work with Kinect camera. I prefer to use it instead of .net libraries from Microsoft because OpenNI is more open
+and, I think, it is a more natural to use it on on unix systems.
+OpenNI saves video and depth map obtained from Kinect camera into it&#8217;s own data format oni. Sometimes it is desirable to have avi files instead because there are
+a lot of code made for this format. So I wrote a simple command line converter from oni to avi data format available <a href="https://github.com/KirillLykov/oni2avi">oni2avi</a>.
+I developed it because one friend of mine who is using Matlab asked me to help him in converting oni file to avi. There is a plugin to Matlab which allows
+to read oni files directly but for whatever reason he could not use it. Hope, this code will be usefull for someone else.
+Oni2Avi needs OpenNI, OpenCV and boost. Please, read README file. In addition, you must to use a modern C++ compiler. If you use gcc, it must be 4.6 or newer.
+In case if you use Mac OS and macport, do the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo port install openni
+</span><span class='line'>sudo port install opencv
+</span><span class='line'>sudo port install boost
+</span><span class='line'>git clone git://github.com/KirillLykov/oni2avi.git
+</span><span class='line'>cd oni2avi
+</span><span class='line'>make
+</span><span class='line'>./oni2avi &lt;your-file-name&gt;.oni &lt;your-file-name&gt;.avi --codec=FLV1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you need any support, please write to <a href="https://github.com/KirillLykov/oni2avi/issues">issues</a>, click button &#8220;New Issue&#8221; and then add a proper label - bug or question.
+An alternative option is to write to my email (address is written in the About section of this blog).</p>
+
+<p><strong>UPD</strong>: Since I shared this tool, I&#8217;ve got many letters with questions. Primarily from students who are doing something with Kinect. The most questions are about building oni2avi, so below are some recomendations:</p>
+
+<ul>
+<li>pathes for libraries and includes in the Makefile are set to the default location for the case you are using MacOS+Macport or Ubuntu+standartPackageInstaller.
+Thus if you have libs or includes in a different place, you need to specify where they are in the Makefile</li>
+<li>if you see a compilation error, please check that all pathes are correc. If you are on Ubuntu, also check whether you need -dev packages to have includes. Finally, check the version of libraries you are using. I suppose that OpenCV version >= 2.3, boost version >= 1.48, OpenNI version >= 1.53</li>
+<li>if you&#8217;ve found a bug, specify a version of libraries you use, command line options for the tool, and input/output files you&#8217;ve got.</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[OpenVDB build on MacOS]]></title>
+    <link href="http://KirillLykov.github.com/blog/2013/02/04/openvdb-installation-on-macos/"/>
+    <updated>2013-02-04T18:54:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2013/02/04/openvdb-installation-on-macos</id>
+    <content type="html"><![CDATA[<p><a href="http://www.openvdb.org/">OpenVDB</a> is a new library by DreamWorks which contains data structures and tools for work with three-dimensional grid.
+For instance, it can be used to work with <a href="http://en.wikipedia.org/wiki/Level_set">level-sets</a>. On the openvdb web site it is written that it is checked to be build only
+on RedHat Linux, so I decided to save my experience about making it on the MacOS (Lion, 10.7.5), with gcc 4.7.2 and openvdb-v0-103-1.</p>
+
+<!--more-->
+
+
+<p>There are two ways of building openvdb - build it under Houdini environment (you need to install houdini) and the second way using macport(no need in Houdini,
+this way is described in the post). In order to build openvdb using Houdini, go to Applications/Houdini<version>/Houdini<version>shell.terminal. In this terminal,
+several environment variables are set (those used in the Makefile). Houdini sdk(called HDK) contains all dependencies except cppunit and glfw. If you use gcc4.6 or older,
+just <code>make</code> and everything should be built. Yet, you may have problems with vdb_view, they are fixed in the patch, have a look inside. If you use a newer version, you will have problems with the HDK&#8217;s boost which is 1.46. I just renamed the folder with boost in hdk and specified path to a more recent version. Just in case if you forgot, if you want to build openvdb with <code>sudo</code>, you need to use <code>sudo -E</code> instead in order to have all environment variables on place.</p>
+
+<p>Now, how to build OpenVDB without using Houdini and with the modern gcc. First of all, you need to have <a href="http://www.macports.org/">macports</a> installed, then I would recommend to install the latest gcc. After that install OpenVDB dependencies:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo port install boost
+</span><span class='line'>sudo port install tbb
+</span><span class='line'>sudo port install openexr
+</span><span class='line'>sudo port install cppunit</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The only problem is to install optional package <code>glfw</code> <a href="http://sourceforge.net/projects/glfw/files/glfw/2.7.7/glfw-2.7.7.zip/download">(download sources)</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>unzip glfw-2.7.7.zip
+</span><span class='line'>cd glfw-2.7.7
+</span><span class='line'>make cocoa
+</span><span class='line'>export PREFIX=&lt;installation path&gt;
+</span><span class='line'>make cocoa-install</span></code></pre></td></tr></table></div></figure>
+
+
+<p>pkg-config libglfw.pc
+In order to simplify linkage of openvdb with glfw (it requires opengl and cocoa), do pkg-config in glwf home:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo port install pkg-config
+</span><span class='line'>cd pkg-config
+</span><span class='line'>pkg-config libglfw.pc
+</span><span class='line'>export PKG_CONFIG_PATH=&lt;path to directory containing libglfw.pc&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After that you need to set up paths to libraries and includes in Makefile in the openvdb directory.
+I made several modifications in the openvdb, all of them can be extracted from the <a href="https://github.com/KirillLykov/openvdb-patches/blob/master/openvdb-0-103-1/openvdb-0-103-1-mac-os-10.7.5.patch">patch</a>:
+- modified Makefile - added boost-system-mt library, added dependencies for vdb_view and other changes
+- modified vdb_view code so it can work with OpenGL 2.1 and GLSL version 120
+- modified one test which can not be compiled without a error in the gcc4.7.2</p>
+
+<p>In order to apply <a href="https://github.com/KirillLykov/openvdb-patches/blob/master/openvdb-0-103-1/openvdb-0-103-1-mac-os-10.7.5.patch">patch</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>patch -p1 &lt; openvdb-0-103-1-mac-os-10.7.5.patch</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When you are done, run <code>make</code>, <code>make install</code> in the OpenVDB src directory. You may try to run vdb_view from the <code>bin</code> directory in the your openvdb installation path.
+In order to do that, download on of the shapes from the <a href="http://www.openvdb.org/download/">openvdb site</a>, for instance <a href="http://www.openvdb.org/download/models/icosahedron.vdb.gz">icosahedron</a> and run:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vdb_view icosahedron.vdb</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The result should look like on the figure below:</p>
+
+<center>
+<img src="../../../../../images/ovdb_icosahedron.png" width="400">
+</center>
+
+
+<p>Then you may run tests (it takes a lot of time so I would skip it).
+When I did it, I found a error (testIO) which leads to program termination. The problem is in cpp-unit I use (1.12.1), to fix it comment call of <code>CPPUNIT_ASSERT_NO_THROW</code> in the <code>TestCoord.cc lines 120 and 123</code>.
+When you will try to use your openvdb library you may have problem: dyld cannot find an image. To fix this problem you may write <code>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:&lt;path_to_your_openvdb_lib&gt;</code>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Lammps data formats into TecPlot ASCI data format]]></title>
+    <link href="http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/"/>
+    <updated>2012-12-20T09:48:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format</id>
+    <content type="html"><![CDATA[<p>One of the TecPlot data formats is a simple ASCI format. It is deprecated but can be opened in both TecPlot and Paraview.
+This data format has variations so further I will use it for atoms and velocity profiles visualizations.</p>
+
+<!--more-->
+
+
+<p>In the simplest case, the file consists of header section where it is needed to specify names of columns:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'> VARIABLES = "BIN", "X", "Y", "Z", "N", "VX", "VY", "VZ", "D"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And so called &#8220;ZONE&#8221; section which consists of header and columns:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'> ZONE I=200,J=24,K=130  F=POINT
+</span><span class='line'> -32.25 -5.75 -99.5 0 0 0 0 0
+</span><span class='line'> ...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This format can be used for the velocity and density fields visualization. To obtain this data from the simulation,
+you need to use fix ave/spatial:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fix profile all ave/spatial 50 2 100  x center 0.5 y center 0.5 z center 0.5 vx vy vz density/number units box file velprof.tec</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This fix writes data in lammps own data format which can not be read by tecplot by default. In order to simplify your life and avoid modifying output file by hands,
+I modified this fix a little bit so if the file has extension &#8220;tec&#8221;, fix writes in the tecplot data format. It is difficult to do in post processing script because tecplot
+requires information about bins in every direction. Replace you ave/spatial with
+<a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.h">fix_ave_spatial.h</a>, <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.cpp">fix_ave_spatial.cpp</a>, build and run LAMMPS.
+In order to open &#8220;velprof.tec&#8221; in tecplot go File->Load DataFile -> TecPlot data loader. In the left panel choose &#8220;Contour&#8221; (pick up D column, it is density).
+Then on the same panel click on &#8220;Vector&#8221; and choose columns &#8220;VX&#8221;, &#8220;VY&#8221;, &#8220;VZ&#8221;. I usually use slices for visualisation, in order to have slice Click &#8220;Slices&#8221; on the left panel,
+then specify properties of your slices, then go Data->Extract->Current Slices&#8230; In Zone styles panel you may define which slices are visible and which ones are not.
+So at the end you might have picture like the following one:</p>
+
+<center>
+<img src="../../../../../images/tecplot.png" width="400">
+</center>
+
+
+<p>In addition to that you may visualise your particles using tecplot. In order to do this, you need to use restart2data tool (lammps->tools),
+and then <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/scripts/atom2plt.sh">atom2plt script</a>. The pipeline is the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>restart2data your.restart your.data
+</span><span class='line'>atom2plt your.data</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After that you will have *.plt file which can be opened in TecPlot. If you domain is periodic and you see some long dark lines, cut in tecplot your data a bit.
+Note, that this code works only for molecular atom style and in 3D. If you need another configuration and changed mentioned code, I would be glad if you
+commit in corresponding git repository or send me a patch.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Tips about building and profiling with Cray perftoolkit]]></title>
+    <link href="http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/"/>
+    <updated>2012-12-19T16:25:00+01:00</updated>
+    <id>http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit</id>
+    <content type="html"><![CDATA[<p>Cray compiler generates <a href="http://www.nersc.gov/users/computational-systems/hopper/performance-and-optimization/compiler-comparisons/">one of the fastest code.</a> On Cray XE6 lammps compiled by Cray Compiler(8.1.2, -O2) outperform gcc code (4.7, -Ofast) in 1.6 times. If you use Cray compiler, it has sense to use Cray&#8217;s perftoolkit for finding bottlenecks in your MPI/OpenMP application.
+This post is about tips about using these tools because I always forget details. I will build and analyze LAMMPS.</p>
+
+<!--more-->
+
+
+<p>Before doing something, check tools available on your system and pick up the newest one.
+To see available versions of Cray compiler:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module avail cce</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If the most recent version is, for example, 8.1.2, load compiler and switch to the last version:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module load PrgEnv-cray
+</span><span class='line'>module swap cce cce/8.1.2</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then check and load perftools:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module avail perftools
+</span><span class='line'>module load perftools/6.0.1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, build an application and instrument your executable with profilers stuff:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make &lt;machine name&gt;
+</span><span class='line'>pat_build -f -u -g mpi,oi lmp_&lt; machine name&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It will create a new executable lmp<em>&lt; machine </em>name>+pat. Further, you need to use this executable
+for your job. If you use SLURM, write in your sbatch script something like that:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>aprun -n 32 env PAT_RT_HWPC=1 lmp_&lt; machine _name&gt;+pat &lt; in.my</span></code></pre></td></tr></table></div></figure>
+
+
+<p>where -n 32 means that you use 32 nodes, the hardware performance counter experiment is defined by setting the environment
+variable PAT_RT_HWPC. More info about this option can be found a the end of the following.
+<a href="http://www.csc.fi/english/pages/louhi_guide/program_development/tools/craypat">page</a>.
+When you job is done, call pat_report:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>pat_report lmp_&lt; machine _name&gt;+pat+* &lt;yourfile&gt;.txt</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This application will create a file with extension ap2. You can explore performance of your application in text editor
+(vi  <yourfile>.txt) or using application apprentice2 which has GUI:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>app2 &lt;ap2 file&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note, that in order to use it you need to have xwindow installed on your local machine and when you connect to your cluster
+you need to specify that it can use your monitor (-Y option):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh &lt;username&gt;@&lt; machine _name&gt; -Y</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[LAMMPS: How to compute fluid viscosity]]></title>
@@ -65,6 +1377,9 @@ I describe how to use this approach in LAMMPS.</p>
 <span class='line-number'>37</span>
 <span class='line-number'>38</span>
 <span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>boundary p p p
 </span><span class='line'>
 </span><span class='line'>units     lj
@@ -88,7 +1403,10 @@ I describe how to use this approach in LAMMPS.</p>
 </span><span class='line'>
 </span><span class='line'>#******************DPD******************
 </span><span class='line'>#to store velocities by ghost atoms
-</span><span class='line'>communicate single vel yes
+</span><span class='line'>#communicate single vel yes - for old versions of lammps
+</span><span class='line'>comm_style brick
+</span><span class='line'>comm_modify vel yes
+</span><span class='line'>
 </span><span class='line'># T cutoff seed
 </span><span class='line'>pair_style  dpd 0.1 1.0 34387
 </span><span class='line'># atom_type atom_type a gamma=sigma^2/2 cutoff(optional)
@@ -114,12 +1432,19 @@ I describe how to use this approach in LAMMPS.</p>
 </pre></td><td class='code'><pre><code class=''><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be something like:
-<img src="../../../../../images/velprofile1.png" width="400"></p>
+<p>The result should be something like:</p>
 
-<p>(4) From analytical solution for the problem, it is known that v(x)=alpha*(x*D - x*x). Where alpha=p*g/(2*n), p - is numeric density(3.0 in our case,
+<center>
+<img src="../../../../../images/velprofile1.png" width="400">
+</center>
+
+
+<p>(4) From analytical solution for the problem, it is known that <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha (D x - x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Where <img src="http://latex.codecogs.com/gif.latex?\alpha=pg/(2n)" style="border: none; box-shadow: none;vertical-align:middle"/>, p - is numeric density(3.0 in our case,
 determined by custom lattice), g is driving force (0.055), n - dynamic viscosity.
-In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas. I pick the left one, so the analytical solution look like v(x)=alpha<em>(x</em>14 + x*x). Then type</p>
+In order to find alpha we will use gnuplot’s fit command. As you might  see on the Figure above, there are 2 parabolas.
+I pick the left one, so the analytical solution look like <img src="http://latex.codecogs.com/gif.latex?v(x)=\alpha*(14x + x^2)" style="border: none; box-shadow: none;vertical-align:middle"/>.
+Then type</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -129,8 +1454,13 @@ In order to find alpha we will use gnuplot’s fit command. As you might  see on
 </span><span class='line'>gnuplot&gt; plot "visc_vel.txt" using 2:4, f(x)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>The result should be a=0.0278, thus n=2.68. The plot with velocities from simulation and  with the fitting plot should look like that:
-<img src="../../../../../images/velprofile2.png" width="400"></p>
+<p>The result should be <img src="http://latex.codecogs.com/gif.latex?\alpha=0.0278" style="border: none; box-shadow: none;vertical-align:middle"/>, thus viscosity n=2.68 in DPD units.
+The plot with velocities from simulation and  with the fitting plot should look like that:</p>
+
+<center>
+<img src="../../../../../images/velprofile2.png" width="400">
+</center>
+
 ]]></content>
   </entry>
   

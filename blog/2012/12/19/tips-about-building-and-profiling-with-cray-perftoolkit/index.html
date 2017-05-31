@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Tips about building and profiling with Cray perftoolkit - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="Cray compiler generates one of the fastest code. On Cray XE6 lammps compiled by Cray Compiler(8.1.2, -O2) outperform gcc code (4.7, -Ofast) in 1.6 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Tips About Building and Profiling With Cray Perftoolkit</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-19T16:25:00+01:00" pubdate data-updated="true">Dec 19<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Cray compiler generates <a href="http://www.nersc.gov/users/computational-systems/hopper/performance-and-optimization/compiler-comparisons/">one of the fastest code.</a> On Cray XE6 lammps compiled by Cray Compiler(8.1.2, -O2) outperform gcc code (4.7, -Ofast) in 1.6 times. If you use Cray compiler, it has sense to use Cray&#8217;s perftoolkit for finding bottlenecks in your MPI/OpenMP application.
+This post is about tips about using these tools because I always forget details. I will build and analyze LAMMPS.</p>
+
+<!--more-->
+
+
+<p>Before doing something, check tools available on your system and pick up the newest one.
+To see available versions of Cray compiler:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module avail cce</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If the most recent version is, for example, 8.1.2, load compiler and switch to the last version:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module load PrgEnv-cray
+</span><span class='line'>module swap cce cce/8.1.2</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then check and load perftools:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>module avail perftools
+</span><span class='line'>module load perftools/6.0.1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, build an application and instrument your executable with profilers stuff:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make &lt;machine name&gt;
+</span><span class='line'>pat_build -f -u -g mpi,oi lmp_&lt; machine name&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It will create a new executable lmp<em>&lt; machine </em>name>+pat. Further, you need to use this executable
+for your job. If you use SLURM, write in your sbatch script something like that:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>aprun -n 32 env PAT_RT_HWPC=1 lmp_&lt; machine _name&gt;+pat &lt; in.my</span></code></pre></td></tr></table></div></figure>
+
+
+<p>where -n 32 means that you use 32 nodes, the hardware performance counter experiment is defined by setting the environment
+variable PAT_RT_HWPC. More info about this option can be found a the end of the following.
+<a href="http://www.csc.fi/english/pages/louhi_guide/program_development/tools/craypat">page</a>.
+When you job is done, call pat_report:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>pat_report lmp_&lt; machine _name&gt;+pat+* &lt;yourfile&gt;.txt</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This application will create a file with extension ap2. You can explore performance of your application in text editor
+(vi  <yourfile>.txt) or using application apprentice2 which has GUI:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>app2 &lt;ap2 file&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note, that in order to use it you need to have xwindow installed on your local machine and when you connect to your cluster
+you need to specify that it can use your monitor (-Y option):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh &lt;username&gt;@&lt; machine _name&gt; -Y</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-19T16:25:00+01:00" pubdate data-updated="true">Dec 19<span>th</span>, 2012</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/" title="Previous Post: LAMMPS: How to compute fluid viscosity">&laquo; LAMMPS: How to compute fluid viscosity</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/" title="Next Post: Lammps data formats into TecPlot ASCI data format">Lammps data formats into TecPlot ASCI data format &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating tumor cells in microfluidics</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

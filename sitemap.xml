@@ -2,28 +2,70 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://KirillLykov.github.com/blog/2012/10/12/initial-post/</loc>
-        <lastmod>2012-10-13T20:59:36+02:00</lastmod>
+        <lastmod>2016-10-05T15:41:21+02:00</lastmod>
     </url>
     <url>
         <loc>http://KirillLykov.github.com/blog/2012/10/13/writing-fixes-for-lammps/</loc>
-        <lastmod>2012-11-13T19:23:12+01:00</lastmod>
+        <lastmod>2016-10-05T15:41:21+02:00</lastmod>
     </url>
     <url>
         <loc>
             http://KirillLykov.github.com/blog/2012/10/22/lammps-how-to-compute-fluid-viscosity/
         </loc>
-        <lastmod>2012-11-02T13:34:40+01:00</lastmod>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://KirillLykov.github.com/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/
+        </loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/
+        </loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KirillLykov.github.com/blog/2013/02/04/openvdb-installation-on-macos/</loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://KirillLykov.github.com/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/
+        </loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KirillLykov.github.com/blog/2013/04/02/level-set-openvdb-intro-1/</loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KirillLykov.github.com/blog/2013/06/06/seam-carving-algorithm/</loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://KirillLykov.github.com/blog/2014/01/17/curvature-flow-in-curvature-space/
+        </loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://KirillLykov.github.com/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/
+        </loc>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
     </url>
     <url>
         <loc>http://KirillLykov.github.com/blog/about/</loc>
-        <lastmod>2012-10-22T16:42:55+02:00</lastmod>
+        <lastmod>2016-10-05T15:43:55+02:00</lastmod>
     </url>
     <url>
         <loc>http://KirillLykov.github.com/blog/archives/</loc>
-        <lastmod>2012-11-13T19:23:12+01:00</lastmod>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
     </url>
     <url>
         <loc>http://KirillLykov.github.com/</loc>
-        <lastmod>2012-11-13T19:23:12+01:00</lastmod>
+        <lastmod>2016-10-05T15:41:22+02:00</lastmod>
     </url>
 </urlset>

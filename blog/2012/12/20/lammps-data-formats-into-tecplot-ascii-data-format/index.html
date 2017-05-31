@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Lammps data formats into TecPlot ASCI data format - K. Lykov Blog</title>
+  <meta name="author" content="Kirill Lykov">
+
+  
+  <meta name="description" content="One of the TecPlot data formats is a simple ASCI format. It is deprecated but can be opened in both TecPlot and Paraview.
+This data format has &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="K. Lykov Blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">K. Lykov Blog</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KirillLykov.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Lammps Data Formats Into TecPlot ASCI Data Format</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-20T09:48:00+01:00" pubdate data-updated="true">Dec 20<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>One of the TecPlot data formats is a simple ASCI format. It is deprecated but can be opened in both TecPlot and Paraview.
+This data format has variations so further I will use it for atoms and velocity profiles visualizations.</p>
+
+<!--more-->
+
+
+<p>In the simplest case, the file consists of header section where it is needed to specify names of columns:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'> VARIABLES = "BIN", "X", "Y", "Z", "N", "VX", "VY", "VZ", "D"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And so called &#8220;ZONE&#8221; section which consists of header and columns:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'> ZONE I=200,J=24,K=130  F=POINT
+</span><span class='line'> -32.25 -5.75 -99.5 0 0 0 0 0
+</span><span class='line'> ...</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This format can be used for the velocity and density fields visualization. To obtain this data from the simulation,
+you need to use fix ave/spatial:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>fix profile all ave/spatial 50 2 100  x center 0.5 y center 0.5 z center 0.5 vx vy vz density/number units box file velprof.tec</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This fix writes data in lammps own data format which can not be read by tecplot by default. In order to simplify your life and avoid modifying output file by hands,
+I modified this fix a little bit so if the file has extension &#8220;tec&#8221;, fix writes in the tecplot data format. It is difficult to do in post processing script because tecplot
+requires information about bins in every direction. Replace you ave/spatial with
+<a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.h">fix_ave_spatial.h</a>, <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/fixes/fix_ave_spatial.cpp">fix_ave_spatial.cpp</a>, build and run LAMMPS.
+In order to open &#8220;velprof.tec&#8221; in tecplot go File->Load DataFile -> TecPlot data loader. In the left panel choose &#8220;Contour&#8221; (pick up D column, it is density).
+Then on the same panel click on &#8220;Vector&#8221; and choose columns &#8220;VX&#8221;, &#8220;VY&#8221;, &#8220;VZ&#8221;. I usually use slices for visualisation, in order to have slice Click &#8220;Slices&#8221; on the left panel,
+then specify properties of your slices, then go Data->Extract->Current Slices&#8230; In Zone styles panel you may define which slices are visible and which ones are not.
+So at the end you might have picture like the following one:</p>
+
+<center>
+<img src="../../../../../images/tecplot.png" width="400">
+</center>
+
+
+<p>In addition to that you may visualise your particles using tecplot. In order to do this, you need to use restart2data tool (lammps->tools),
+and then <a href="https://github.com/KirillLykov/lammps-extensions/blob/master/scripts/atom2plt.sh">atom2plt script</a>. The pipeline is the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>restart2data your.restart your.data
+</span><span class='line'>atom2plt your.data</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After that you will have *.plt file which can be opened in TecPlot. If you domain is periodic and you see some long dark lines, cut in tecplot your data a bit.
+Note, that this code works only for molecular atom style and in 3D. If you need another configuration and changed mentioned code, I would be glad if you
+commit in corresponding git repository or send me a patch.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kirill Lykov</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-20T09:48:00+01:00" pubdate data-updated="true">Dec 20<span>th</span>, 2012</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/" data-via="" data-counturl="http://KirillLykov.github.com/blog/2012/12/20/lammps-data-formats-into-tecplot-ascii-data-format/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/12/19/tips-about-building-and-profiling-with-cray-perftoolkit/" title="Previous Post: Tips about building and profiling with Cray perftoolkit">&laquo; Tips about building and profiling with Cray perftoolkit</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/04/openvdb-installation-on-macos/" title="Next Post: OpenVDB build on MacOS">OpenVDB build on MacOS &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/circulating-tumor-cells-in-microfluidics/">Circulating tumor cells in microfluidics</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/01/17/curvature-flow-in-curvature-space/">Curvature flow in curvature space</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/06/06/seam-carving-algorithm/">Seam carving algorithm</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/02/level-set-openvdb-intro-1/">Level sets with OpenVDB. Quick introduction. Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/19/convert-openni-star-dot-oni-files-into-avi/">Convert OpenNI (*.oni) files into avi - oni2avi</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/KirillLykov">@KirillLykov</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'KirillLykov',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus googleplus-hidden">
+  <h1>
+    <a href="https://plus.google.com/Kirill Lykov?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Kirill Lykov -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
