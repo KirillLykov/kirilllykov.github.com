@@ -1,0 +1,52 @@
+In this post I will share my thoughts about interview preparation process for Software Engineer position. It might be useful for those who are planning to interview with Google, Facebook, Jane Street, Amazon, and other companies which employ tough algorithmic problems to select candidates. I will start with the review of my background, then briefly describe my preparation process, and, finally, provide a posteriori preparation advices.
+
+I started programming at the age of 15 (I was in a special high school for programmers), then I was studying Mathematics and, after that, worked for 4 years as SE. Finally, I was doing PhD in Computational Physics. So at the beginning of my preparation process, I already forgot algorithms classes from my high school but I knew quite well several programming languages.
+
+I started my preparation more than a year before having interviews to the target companies. At the first step, I read the whole Cormen (March'16-September'16). I solved most of the exercises and implemented all the algorithms except those which are irrelevant for the interview like FFT. To practice, I solved around 250 problems from the book "Elements of programming interview". I typically read one chapter per week and solved 1-2 problems per day. In addition, I was solving problems from Leetcode (June'16-July17). At the beginning, I was solving a few easy per week. During the second step, I was reading topcoder algorithms tutorials and solving some problems listed there. At that time, I was solving 1-2 problems from leetcode a day, sometimes participating in the contests. During the third preparation step, I solved around 100 problems on leetcode for 3 weeks (it was right before Google telephone interview). The final preparation step (preparation for Google onside) was solving contest per day (topcoder, hackerrank, hackerearth), plus 2 problem per day on whiteboard.
+
+## Preparation principles
+
+Looking back I see quite many mistakes which did my preparation more time consuming than it could be. In particular, I should have concentrated more on the goal - develop skills in problems solving. So there is no need to spend so much time on Cormen. Participate more in contests from the beginning,  and others.
+
+Thus, a posteriori, I would give build my preparation strategy on the following principles:
+
+1) Use small iterations while preparing.
+
+2) Find and use metrics for performance to evaluate your progress and weak points.
+
+3) Read books/blogs about algorithms only by demand. First check out e-maxx.ru/algo/, which provides a brief algorithm explanation, and only after that read Cormen in case if you still don't understand it.
+
+4) Participate in all the contests you can find.
+
+5) Gradually increase the complexity, does not makes sense to solve div1C if you are not comfortable with div1A.
+
+More specifically, I would split the whole process into 3 weeks iterations. Before starting each iteration, you evaluate you strength and weaknesses using well-defined metrics. My metrics were: 
+
+a) time to solution: for easy/medium/hard,
+
+b) accuracy of solution: how many times you need to run the code before submitting to find out all bugs, how many test cases it passes
+
+c) white board: how good is your explanation
+
+d) mental stamina: do you manage to solve problem for several hours in a row (in contests, for instance)?
+
+I would recommend to take problems from archives of topcoder, codeforces, codejam, hackerearth, hackerrrank or participate in a competition if at that date there is one. To practice sta
+ndard interview problems, use leetcode - it has so called "mock-up" mode which shows your time-to-solution and distribution of other users. Ideally, you need to solve 3 problems a day w
+hich correspond to your current level.
+
+## Plan example
+1. Cover basic topics:
+
+1.1 Cover simple ad hoc problems, which do not require any algorithms knowledge. Plenty of them are on leetcode (easy), topcoder div2a, codeforces div2a or b. K
+
+1.2 Study binary search. Check out topcoder tutorial, hackerearth tutorial.  Also you can find relevant problems there.
+
+1.3 Checkout greedy algorithms. The same sources.
+
+1.4 Cover simple dynamics. The same sources.
+
+2. Achieve proficiency in basics. Solve problems on these topics on different resources. Key metrics: time to solution, accuracy of solution. You must not do mistakes on these problems.
+
+3. Cover the next topic (graph algorithms, more complicated dynamics, sweep line, combinatorics, etc). Practice problems for this topic. Also solve random contests and, when you meet something you have no clue about, study this topic and practice. Evaluate your performance every several weeks.
+
+4. Evaluate your weaknesses, increase complexity of the problems you solve. Go to step 3.
